@@ -60,16 +60,11 @@ public struct SpotlightView<Item: SpotlightItem>: View {
 				viewModel.selectCurrent()
 			}
 			
-			if viewModel.isLoading {
-				ProgressView()
-					.scaleEffect(0.7)
-			} else if !viewModel.searchText.isEmpty {
-				Button(action: { viewModel.reset() }) {
-					Image(systemName: "xmark.circle.fill")
-						.foregroundColor(.secondary)
-				}
-				.buttonStyle(.plain)
+			Button(action: { viewModel.reset() }) {
+				Image(systemName: "xmark.circle.fill")
+					.foregroundColor(.secondary)
 			}
+			.buttonStyle(.plain)
 		}
 	}
 	
@@ -277,29 +272,41 @@ public struct MultiSectionSpotlightView<Item: SpotlightItem>: View {
 	
 	public var body: some View {
 		VStack(spacing: 0) {
-			searchBar
-				.padding()
 			
-			if viewModel.state == .idle && !viewModel.visibleSections().isEmpty {
-				if viewModel.configuration.showDividers {
-					Divider()
-					
-				}
+			GlassEffectContainer {
 				
-				sectionsView
-				
-			} else if viewModel.state == .showingResults {
-				if viewModel.configuration.showDividers {
-					Divider()
+				HStack {
+					let textAreaWidth  = viewModel.selectedSection >= 0 ?
+					width - 65 :
+					width
 					
+					VStack {
+						searchBar
+							.padding()
+						
+						if viewModel.state == .showingResults {
+							if viewModel.configuration.showDividers {
+								Divider()
+							}
+							
+							resultsView
+						}
+					}
+					.frame(width: textAreaWidth)
+					.glassEffect(.clear, in: .rect(cornerRadius: viewModel.configuration.cornerRadius))
+					.onKeyPress { keyPress in
+						viewModel.handleKeyPress(keyPress)
+					}
+					
+					if viewModel.state == .idle &&
+						!viewModel.visibleSections().isEmpty &&
+						viewModel.selectedSection != -1
+					{
+						sectionsView
+					}
 				}
-				resultsView
 			}
-		}
-		.frame(width: width)
-		//.glassEffect(in: .rect(cornerRadius: viewModel.configuration.cornerRadius))
-		.onKeyPress { keyPress in
-			viewModel.handleKeyPress(keyPress)
+			
 		}
 	}
 	
@@ -324,46 +331,70 @@ public struct MultiSectionSpotlightView<Item: SpotlightItem>: View {
 	}
 	
 	private var sectionsView: some View {
-		ScrollView {
-			LazyVStack(alignment: .leading, spacing: 16) {
-				ForEach(viewModel.visibleSections(), id: \.id) { section in
-					sectionView(section)
-				}
-			}
-			.padding()
+		ForEach(viewModel.visibleSections().enumerated(), id: \.element.id) { index, section in
+			sectionView(section, index)
 		}
-		.frame(maxHeight: viewModel.configuration.maxHeight)
+		
+//		ScrollView {
+//			LazyVStack(alignment: .leading, spacing: 16) {
+//				
+//			}
+//			.padding()
+//		}
+//		.frame(maxHeight: viewModel.configuration.maxHeight)
 	}
 	
-	private func sectionView(_ section: SpotlightSection<Item>) -> some View {
-		VStack(alignment: .leading, spacing: 8) {
-			if let title = section.title {
-				HStack(spacing: 8) {
-					if let icon = section.icon {
-						Image(systemName: icon)
-							.foregroundColor(.secondary)
-					}
-					
-					Text(title)
-						.font(.headline)
-						.foregroundColor(.secondary)
-				}
-				.padding(.horizontal, 4)
-			}
+	private func sectionView(_ section: SpotlightSection<Item>, _ index: Int) -> some View {
+		return Button {
 			
-			ForEach(section.items()) { item in
-				DefaultSpotlightRowView(
-					item: item,
-					isSelected: false,
-					style: viewModel.rowStyle,
-					onTap: {
-						Task { @MainActor in
-							section.onSelect(item)
-						}
-					}
-				)
-			}
+			
+		} label: {
+			Image(systemName: section.icon ?? "gearshape")
+				.font(.system(size: 19))
+				.frame(width: 55, height: 55)
+				.contentShape(Circle())
+			
 		}
+		.buttonStyle(.plain)
+		.glassEffect(
+			.regular.tint(
+					viewModel.selectedSection == index ?
+					Color.accentColor :
+					Color.clear
+				),
+			in: .circle
+		)
+		.clipShape(Circle())
+		.transition(.move(edge: .leading).combined(with: .opacity))
+		
+//		VStack(alignment: .leading, spacing: 8) {
+//			if let title = section.title {
+//				HStack(spacing: 8) {
+//					if let icon = section.icon {
+//						Image(systemName: icon)
+//							.foregroundColor(.secondary)
+//					}
+//					
+//					Text(title)
+//						.font(.headline)
+//						.foregroundColor(.secondary)
+//				}
+//				.padding(.horizontal, 4)
+//			}
+//			
+//			ForEach(section.items()) { item in
+//				DefaultSpotlightRowView(
+//					item: item,
+//					isSelected: false,
+//					style: viewModel.rowStyle,
+//					onTap: {
+//						Task { @MainActor in
+//							section.onSelect(item)
+//						}
+//					}
+//				)
+//			}
+//		}
 	}
 	
 	private var resultsView: some View {
@@ -406,52 +437,7 @@ public struct MultiSectionSpotlightView<Item: SpotlightItem>: View {
 	}
 }
 
-// MARK: - Glass Effect Modifier Extension
-
-extension View {
-	/// Applica un glass effect alla view
-	public func glassEffect(
-		_ material: Material = .regular,
-		in shape: some InsettableShape
-	) -> some View {
-		self
-			.background(material, in: shape)
-			.overlay(
-				shape
-					.strokeBorder(
-						LinearGradient(
-							colors: [
-								Color.white.opacity(0.2),
-								Color.white.opacity(0.0)
-							],
-							startPoint: .topLeading,
-							endPoint: .bottomTrailing
-						),
-						lineWidth: 1
-					)
-			)
-			.shadow(color: .black.opacity(0.2), radius: 20, y: 10)
-	}
-}
-
-// MARK: - Glass Effect Container (from original code)
-
-public struct GlassEffectContainer<Content: View>: View {
-	let spacing: CGFloat
-	let content: () -> Content
-	
-	public init(spacing: CGFloat = 18, @ViewBuilder content: @escaping () -> Content) {
-		self.spacing = spacing
-		self.content = content
-	}
-	
-	public var body: some View {
-		content()
-	}
-}
-
 // MARK: - Preference Key
-
 struct ContentHeightKey: PreferenceKey {
 	static let defaultValue: CGFloat = 0
 	static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) {

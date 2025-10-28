@@ -24,6 +24,7 @@ public class SpotlightViewModel<Item: SpotlightItem>: ObservableObject {
 	
 	@Published public var searchText: String = ""
 	@Published public var selectedIndex: Int = 0
+	@Published public var selectedSection: Int = -1
 	@Published public var state: SpotlightState = .idle
 	@Published public var searchResults: [Item] = []
 	@Published public var isLoading: Bool = false
@@ -109,28 +110,56 @@ public class SpotlightViewModel<Item: SpotlightItem>: ObservableObject {
 		}
 	}
 	
+	/// Navigate to left sections
+	public func navigateLeft() {
+		if selectedSection >= 0 {
+			selectedSection -= 1
+		}
+	}
+	
+	/// Navigate to right sections
+	public func navigateRight() {
+		if selectedSection < sections.count - 1 {
+			selectedSection += 1
+		}
+	}
+	
 	/// Gestisce eventi della tastiera
 	@discardableResult
 	public func handleKeyPress(_ keyPress: KeyPress) -> KeyPress.Result {
 		switch keyPress.key {
-		case .downArrow:
-			navigateDown()
-			return .handled
-			
-		case .upArrow:
-			navigateUp()
-			return .handled
-			
-		case .return:
-			selectCurrent()
-			return .handled
-			
-		case .escape:
-			reset()
-			return .handled
-			
-		default:
-			return .ignored
+			case .downArrow:
+				navigateDown()
+				return .handled
+				
+			case .upArrow:
+				navigateUp()
+				return .handled
+					
+			case .leftArrow:
+				withAnimation(.spring(response: 0.6, dampingFraction: 0.8)) {
+					navigateLeft()
+				}
+				
+				return .handled
+				
+			case .rightArrow:
+				withAnimation(.spring(response: 0.6, dampingFraction: 0.8)) {
+					navigateRight()
+				}
+				
+				return .handled
+				
+			case .return:
+				selectCurrent()
+				return .handled
+				
+			case .escape:
+				reset()
+				return .handled
+				
+			default:
+				return .ignored
 		}
 	}
 	
@@ -223,12 +252,14 @@ public class SpotlightViewModel<Item: SpotlightItem>: ObservableObject {
 // MARK: - Convenience Extensions
 
 extension SpotlightViewModel where Item == SpotlightFileItem {
+	
 	/// Crea un ViewModel per la ricerca di file
 	public static func fileSearch(
 		directory: URL,
 		fileExtensions: [String]? = nil,
 		onSelect: @escaping @MainActor (SpotlightFileItem) -> Void,
 		configuration: SpotlightConfiguration = .default
+		
 	) -> SpotlightViewModel<SpotlightFileItem> {
 		let dataSource = FileSystemDataSource(
 			directory: directory,

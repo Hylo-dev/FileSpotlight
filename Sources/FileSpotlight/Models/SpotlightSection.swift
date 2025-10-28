@@ -9,13 +9,13 @@ import SwiftUI
 
 /// Sezione personalizzabile dello spotlight
 public struct SpotlightSection<Item: SpotlightItem> {
-	public let id: String
-	public let title: String?
-	public let icon: String?
-	public let items: @Sendable () -> [Item]
-	public let onSelect: @Sendable @MainActor (Item) -> Void
+	public let id			   : String
+	public let title		   : String?
+	public let icon 		   : String?
+	public let items		   : @Sendable () -> [Item]
+	public let onSelect		   : @Sendable @MainActor (Item) -> Void
 	public let keyboardShortcut: KeyEquivalent?
-	public let isVisible: @Sendable () -> Bool
+	public let isVisible	   : @Sendable () -> Bool
 	
 	public init(
 		id: String,
