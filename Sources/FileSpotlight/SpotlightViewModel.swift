@@ -93,6 +93,7 @@ public class SpotlightViewModel<Item: SpotlightItem>: ObservableObject {
 	public func selectCurrent() {
 		guard !searchResults.isEmpty, selectedIndex < searchResults.count else { return }
 		let item = searchResults[selectedIndex]
+		
 		handleSelection(item)
 	}
 	
@@ -112,14 +113,14 @@ public class SpotlightViewModel<Item: SpotlightItem>: ObservableObject {
 	
 	/// Navigate to left sections
 	public func navigateLeft() {
-		if selectedSection >= 0 {
+		if selectedSection >= 0 && state == .idle {
 			selectedSection -= 1
 		}
 	}
 	
 	/// Navigate to right sections
 	public func navigateRight() {
-		if selectedSection < sections.count - 1 {
+		if selectedSection < sections.count - 1 && state == .idle {
 			selectedSection += 1
 		}
 	}
@@ -235,6 +236,7 @@ public class SpotlightViewModel<Item: SpotlightItem>: ObservableObject {
 	}
 	
 	private func handleSelection(_ item: Item) {
+		
 		// Cerca la sezione corrispondente e chiama il callback
 		for section in sections {
 			let sectionItems = section.items()

@@ -124,7 +124,12 @@ private func shortcutRow(icon: String, text: String) -> some View {
 
 #Preview("Multi-Section Spotlight") {
 	@Previewable @StateObject var viewModel = {
+		let dataSource = FileSystemDataSource(
+			directory: URL(fileURLWithPath: "/Users/eliorodr2104/Downloads"),
+			fileExtensions: ["pdf"]
+		)
 		let vm = SpotlightViewModel<SpotlightFileItem>(
+			dataSource: dataSource,
 			configuration: .init(
 				placeholder: "Search everywhere...",
 				cornerRadius: 20

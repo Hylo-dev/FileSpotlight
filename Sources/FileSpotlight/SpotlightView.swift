@@ -276,9 +276,9 @@ public struct MultiSectionSpotlightView<Item: SpotlightItem>: View {
 			GlassEffectContainer {
 				
 				HStack {
-					let textAreaWidth  = viewModel.selectedSection >= 0 ?
-					width - 65 :
-					width
+					let textAreaWidth  = viewModel.selectedSection >= 0 &&
+										 viewModel.state == .idle ?
+										 width - 65 : width
 					
 					VStack {
 						searchBar
