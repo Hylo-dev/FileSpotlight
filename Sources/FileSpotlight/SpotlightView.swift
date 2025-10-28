@@ -276,7 +276,7 @@ public struct MultiSectionSpotlightView<Item: SpotlightItem>: View {
 			GlassEffectContainer {
 				
 				HStack {
-					let textAreaWidth  = viewModel.selectedSection >= 0 &&
+					let textAreaWidth  = viewModel.selectedSection > 0 &&
 										 viewModel.state == .idle ?
 										 width - 65 : width
 					
@@ -300,7 +300,7 @@ public struct MultiSectionSpotlightView<Item: SpotlightItem>: View {
 					
 					if viewModel.state == .idle &&
 						!viewModel.visibleSections().isEmpty &&
-						viewModel.selectedSection != -1
+						viewModel.selectedSection != 0
 					{
 						sectionsView
 					}
@@ -312,12 +312,15 @@ public struct MultiSectionSpotlightView<Item: SpotlightItem>: View {
 	
 	private var searchBar: some View {
 		HStack(spacing: 12) {
-			Image(systemName: viewModel.configuration.searchIcon)
+			let item = viewModel.sections[viewModel.selectedSection]
+			let icon = item.icon ?? "gearshape"
+			Image(systemName: icon) // viewModel.configuration.searchIcon
 				.foregroundColor(.secondary)
 				.font(.title2)
 			
+			let placeholder = item.title ?? "nil"
 			TextField(
-				viewModel.configuration.placeholder,
+				placeholder,
 				text: $viewModel.searchText
 			)
 			.textFieldStyle(.plain)
@@ -332,7 +335,7 @@ public struct MultiSectionSpotlightView<Item: SpotlightItem>: View {
 	
 	private var sectionsView: some View {
 		ForEach(viewModel.visibleSections().enumerated(), id: \.element.id) { index, section in
-			sectionView(section, index)
+			if index != 0 { sectionView(section, index) }
 		}
 		
 //		ScrollView {
