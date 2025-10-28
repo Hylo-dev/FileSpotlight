@@ -1,0 +1,460 @@
+//
+//  FileSearchView.swift
+//  NeonC
+//
+//  Created by Eliomar Alejandro Rodriguez Ferrer on 24/08/25.
+//
+
+import SwiftUI
+
+/// Vista principale dello Spotlight generica con Glass Effect
+public struct SpotlightView<Item: SpotlightItem>: View {
+	
+	@ObservedObject private var viewModel: SpotlightViewModel<Item>
+	
+	private let width: CGFloat
+	
+	public init(
+		viewModel: SpotlightViewModel<Item>,
+		width: CGFloat = 600
+	) {
+		self.viewModel = viewModel
+		self.width = width
+	}
+	
+	public var body: some View {
+		VStack(spacing: 0) {
+			searchBar
+				.padding()
+			
+			if viewModel.state == .showingResults {
+				if viewModel.configuration.showDividers {
+					Divider()
+				}
+				
+				resultsView
+			}
+		}
+		.frame(width: width)
+		.glassEffect(.clear, in: .rect(cornerRadius: viewModel.configuration.cornerRadius))
+		.onKeyPress { keyPress in
+			viewModel.handleKeyPress(keyPress)
+		}
+	}
+	
+	// MARK: - Search Bar
+	
+	private var searchBar: some View {
+		HStack(spacing: 12) {
+			Image(systemName: viewModel.configuration.searchIcon)
+				.foregroundColor(.secondary)
+				.font(.title2)
+			
+			TextField(
+				viewModel.configuration.placeholder,
+				text: $viewModel.searchText
+			)
+			.textFieldStyle(.plain)
+			.font(.title2)
+			.onSubmit {
+				viewModel.selectCurrent()
+			}
+			
+			if viewModel.isLoading {
+				ProgressView()
+					.scaleEffect(0.7)
+			} else if !viewModel.searchText.isEmpty {
+				Button(action: { viewModel.reset() }) {
+					Image(systemName: "xmark.circle.fill")
+						.foregroundColor(.secondary)
+				}
+				.buttonStyle(.plain)
+			}
+		}
+	}
+	
+	// MARK: - Results View
+	
+	private var resultsView: some View {
+		ScrollViewReader { proxy in
+			ScrollView {
+				LazyVStack(spacing: 8) {
+					ForEach(viewModel.searchResults.indices, id: \.self) { index in
+						let item = viewModel.searchResults[index]
+						let isSelected = index == viewModel.selectedIndex
+						
+						DefaultSpotlightRowView(
+							item: item,
+							isSelected: isSelected,
+							style: viewModel.rowStyle,
+							onTap: {
+								viewModel.selectedIndex = index
+								viewModel.selectCurrent()
+							}
+						)
+						.id(index)
+					}
+				}
+				.padding()
+				.background(
+					GeometryReader { geo in
+						Color.clear.preference(
+							key: ContentHeightKey.self,
+							value: geo.size.height
+						)
+					}
+				)
+			}
+			.frame(maxHeight: viewModel.configuration.maxHeight)
+			.onChange(of: viewModel.selectedIndex) { _, newIndex in
+				withAnimation(.easeInOut(duration: 0.3)) {
+					proxy.scrollTo(newIndex, anchor: .center)
+				}
+			}
+		}
+		.transition(
+			.asymmetric(
+				insertion: .scale(scale: 0.95, anchor: .top)
+					.combined(with: .opacity),
+				removal: .scale(scale: 0.95, anchor: .top)
+					.combined(with: .opacity)
+			)
+		)
+	}
+}
+
+// MARK: - Custom Row View Spotlight
+
+public struct CustomSpotlightView<Item: SpotlightItem, RowView: SpotlightRowViewProtocol>: View where RowView.Item == Item {
+	
+	@ObservedObject private var viewModel: SpotlightViewModel<Item>
+	
+	private let width: CGFloat
+	private let rowViewType: RowView.Type
+	
+	public init(
+		viewModel: SpotlightViewModel<Item>,
+		width: CGFloat = 600,
+		rowView: RowView.Type
+	) {
+		self.viewModel = viewModel
+		self.width = width
+		self.rowViewType = rowView
+	}
+	
+	public var body: some View {
+		VStack(spacing: 0) {
+			searchBar
+				.padding()
+			
+			if viewModel.state == .showingResults {
+				if viewModel.configuration.showDividers {
+					Divider()
+				}
+				
+				resultsView
+			}
+		}
+		.frame(width: width)
+		.glassEffect(.clear, in: .rect(cornerRadius: viewModel.configuration.cornerRadius))
+		.onKeyPress { keyPress in
+			viewModel.handleKeyPress(keyPress)
+		}
+	}
+	
+	private var searchBar: some View {
+		HStack(spacing: 12) {
+			Image(systemName: viewModel.configuration.searchIcon)
+				.foregroundColor(.secondary)
+				.font(.title2)
+			
+			TextField(
+				viewModel.configuration.placeholder,
+				text: $viewModel.searchText
+			)
+			.textFieldStyle(.plain)
+			.font(.title2)
+			.onSubmit {
+				viewModel.selectCurrent()
+			}
+			
+			if viewModel.isLoading {
+				ProgressView()
+					.scaleEffect(0.7)
+			} else if !viewModel.searchText.isEmpty {
+				Button(action: { viewModel.reset() }) {
+					Image(systemName: "xmark.circle.fill")
+						.foregroundColor(.secondary)
+				}
+				.buttonStyle(.plain)
+			}
+		}
+	}
+	
+	private var resultsView: some View {
+		ScrollViewReader { proxy in
+			ScrollView {
+				LazyVStack(spacing: 8) {
+					ForEach(viewModel.searchResults.indices, id: \.self) { index in
+						let item = viewModel.searchResults[index]
+						let isSelected = index == viewModel.selectedIndex
+						
+						rowViewType.init(
+							item: item,
+							isSelected: isSelected,
+							style: viewModel.rowStyle,
+							onTap: {
+								viewModel.selectedIndex = index
+								viewModel.selectCurrent()
+							}
+						)
+						.id(index)
+					}
+				}
+				.padding()
+				.background(
+					GeometryReader { geo in
+						Color.clear.preference(
+							key: ContentHeightKey.self,
+							value: geo.size.height
+						)
+					}
+				)
+			}
+			.frame(maxHeight: viewModel.configuration.maxHeight)
+			.onChange(of: viewModel.selectedIndex) { _, newIndex in
+				withAnimation(.easeInOut(duration: 0.3)) {
+					proxy.scrollTo(newIndex, anchor: .center)
+				}
+			}
+		}
+		.transition(
+			.asymmetric(
+				insertion: .scale(scale: 0.95, anchor: .top)
+					.combined(with: .opacity),
+				removal: .scale(scale: 0.95, anchor: .top)
+					.combined(with: .opacity)
+			)
+		)
+	}
+}
+
+// MARK: - Convenience View for Files
+
+public struct FileSpotlightView: View {
+	@StateObject private var viewModel: SpotlightViewModel<SpotlightFileItem>
+	
+	public init(
+		directory: URL,
+		fileExtensions: [String]? = nil,
+		configuration: SpotlightConfiguration = .default,
+		onSelect: @escaping @MainActor (SpotlightFileItem) -> Void
+	) {
+		_viewModel = StateObject(wrappedValue: .fileSearch(
+			directory: directory,
+			fileExtensions: fileExtensions,
+			onSelect: onSelect,
+			configuration: configuration
+		))
+	}
+	
+	public var body: some View {
+		SpotlightView(viewModel: viewModel)
+	}
+}
+
+// MARK: - Multi-Section Spotlight View with Glass Effect
+
+public struct MultiSectionSpotlightView<Item: SpotlightItem>: View {
+	@ObservedObject private var viewModel: SpotlightViewModel<Item>
+	
+	private let width: CGFloat
+	
+	public init(viewModel: SpotlightViewModel<Item>, width: CGFloat = 600) {
+		self.viewModel = viewModel
+		self.width = width
+	}
+	
+	public var body: some View {
+		VStack(spacing: 0) {
+			searchBar
+				.padding()
+			
+			if viewModel.state == .idle && !viewModel.visibleSections().isEmpty {
+				if viewModel.configuration.showDividers {
+					Divider()
+					
+				}
+				
+				sectionsView
+				
+			} else if viewModel.state == .showingResults {
+				if viewModel.configuration.showDividers {
+					Divider()
+					
+				}
+				resultsView
+			}
+		}
+		.frame(width: width)
+		//.glassEffect(in: .rect(cornerRadius: viewModel.configuration.cornerRadius))
+		.onKeyPress { keyPress in
+			viewModel.handleKeyPress(keyPress)
+		}
+	}
+	
+	private var searchBar: some View {
+		HStack(spacing: 12) {
+			Image(systemName: viewModel.configuration.searchIcon)
+				.foregroundColor(.secondary)
+				.font(.title2)
+			
+			TextField(
+				viewModel.configuration.placeholder,
+				text: $viewModel.searchText
+			)
+			.textFieldStyle(.plain)
+			.font(.title2)
+			
+			if viewModel.isLoading {
+				ProgressView()
+					.scaleEffect(0.7)
+			}
+		}
+	}
+	
+	private var sectionsView: some View {
+		ScrollView {
+			LazyVStack(alignment: .leading, spacing: 16) {
+				ForEach(viewModel.visibleSections(), id: \.id) { section in
+					sectionView(section)
+				}
+			}
+			.padding()
+		}
+		.frame(maxHeight: viewModel.configuration.maxHeight)
+	}
+	
+	private func sectionView(_ section: SpotlightSection<Item>) -> some View {
+		VStack(alignment: .leading, spacing: 8) {
+			if let title = section.title {
+				HStack(spacing: 8) {
+					if let icon = section.icon {
+						Image(systemName: icon)
+							.foregroundColor(.secondary)
+					}
+					
+					Text(title)
+						.font(.headline)
+						.foregroundColor(.secondary)
+				}
+				.padding(.horizontal, 4)
+			}
+			
+			ForEach(section.items()) { item in
+				DefaultSpotlightRowView(
+					item: item,
+					isSelected: false,
+					style: viewModel.rowStyle,
+					onTap: {
+						Task { @MainActor in
+							section.onSelect(item)
+						}
+					}
+				)
+			}
+		}
+	}
+	
+	private var resultsView: some View {
+		ScrollViewReader { proxy in
+			ScrollView {
+				LazyVStack(spacing: 8) {
+					ForEach(viewModel.searchResults.indices, id: \.self) { index in
+						let item = viewModel.searchResults[index]
+						let isSelected = index == viewModel.selectedIndex
+						
+						DefaultSpotlightRowView(
+							item: item,
+							isSelected: isSelected,
+							style: viewModel.rowStyle,
+							onTap: {
+								viewModel.selectedIndex = index
+								viewModel.selectCurrent()
+							}
+						)
+						.id(index)
+					}
+				}
+				.padding()
+			}
+			.frame(maxHeight: viewModel.configuration.maxHeight)
+			.onChange(of: viewModel.selectedIndex) { _, newIndex in
+				withAnimation(.easeInOut(duration: 0.3)) {
+					proxy.scrollTo(newIndex, anchor: .center)
+				}
+			}
+		}
+		.transition(
+			.asymmetric(
+				insertion: .scale(scale: 0.95, anchor: .top)
+					.combined(with: .opacity),
+				removal: .scale(scale: 0.95, anchor: .top)
+					.combined(with: .opacity)
+			)
+		)
+	}
+}
+
+// MARK: - Glass Effect Modifier Extension
+
+extension View {
+	/// Applica un glass effect alla view
+	public func glassEffect(
+		_ material: Material = .regular,
+		in shape: some InsettableShape
+	) -> some View {
+		self
+			.background(material, in: shape)
+			.overlay(
+				shape
+					.strokeBorder(
+						LinearGradient(
+							colors: [
+								Color.white.opacity(0.2),
+								Color.white.opacity(0.0)
+							],
+							startPoint: .topLeading,
+							endPoint: .bottomTrailing
+						),
+						lineWidth: 1
+					)
+			)
+			.shadow(color: .black.opacity(0.2), radius: 20, y: 10)
+	}
+}
+
+// MARK: - Glass Effect Container (from original code)
+
+public struct GlassEffectContainer<Content: View>: View {
+	let spacing: CGFloat
+	let content: () -> Content
+	
+	public init(spacing: CGFloat = 18, @ViewBuilder content: @escaping () -> Content) {
+		self.spacing = spacing
+		self.content = content
+	}
+	
+	public var body: some View {
+		content()
+	}
+}
+
+// MARK: - Preference Key
+
+struct ContentHeightKey: PreferenceKey {
+	static let defaultValue: CGFloat = 0
+	static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) {
+		value = max(value, nextValue())
+	}
+}
