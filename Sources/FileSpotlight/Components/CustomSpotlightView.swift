@@ -10,14 +10,14 @@ import SwiftUI
 // MARK: - Custom Row View Spotlight
 public struct CustomSpotlightView<Item: SpotlightItem, RowView: SpotlightRowViewProtocol>: View where RowView.Item == Item {
 	
-	@ObservedObject private var viewModel: SpotlightViewModel<Item>
+	@ObservedObject private var viewModel: CustomSpotlightViewModel<Item>
 	
 	private let width: CGFloat
 	private let rowViewType: RowView.Type
 	private var shape: AnyShape = AnyShape(RoundedRectangle(cornerRadius: 36))
 	
 	public init(
-		viewModel: SpotlightViewModel<Item>,
+		viewModel: CustomSpotlightViewModel<Item>,
 		width: CGFloat = 600,
 		rowView: RowView.Type
 	) {

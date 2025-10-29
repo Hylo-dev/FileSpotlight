@@ -8,72 +8,6 @@
 import SwiftUI
 // MARK: - Preview con Mock Data
 
-#Preview("Spotlight with Mock Data") {
-	@Previewable @StateObject var viewModel = SpotlightViewModel.initFileSearch(
-		directory: URL(fileURLWithPath: "/Users/eliorodr2104/Downloads"),
-		fileExtensions: ["pdf"],
-		configuration: .init(
-			debounceInterval: 150,
-			maxHeight: 400,
-			showDividers: true
-		)
-	)
-	
-	ZStack {
-		// Background gradient
-		LinearGradient(
-			colors: [
-				Color(red: 0.1, green: 0.1, blue: 0.2),
-				Color(red: 0.2, green: 0.1, blue: 0.3)
-			],
-			startPoint: .topLeading,
-			endPoint: .bottomTrailing
-		)
-		.ignoresSafeArea()
-		
-		VStack(spacing: 20) {
-			Text("SpotlightKit Demo")
-				.font(.largeTitle)
-				.fontWeight(.bold)
-				.foregroundColor(.white)
-			
-			Text("Try searching: 'View', 'Swift', 'README'")
-				.font(.subheadline)
-				.foregroundColor(.white.opacity(0.7))
-			
-			SpotlightView(viewModel: viewModel, width: 600)
-				.padding(.top, 20)
-				.clipShape(.rect(cornerRadius: 24))
-			
-			Spacer()
-			
-			// Info panel
-			VStack(alignment: .leading, spacing: 8) {
-				HStack {
-					Image(systemName: "keyboard")
-						.foregroundColor(.white.opacity(0.7))
-					Text("Keyboard Shortcuts:")
-						.font(.headline)
-						.foregroundColor(.white)
-				}
-				
-				Group {
-					shortcutRow(icon: "arrow.up", text: "Navigate Up")
-					shortcutRow(icon: "arrow.down", text: "Navigate Down")
-					shortcutRow(icon: "return", text: "Select Item")
-					shortcutRow(icon: "escape", text: "Clear/Reset")
-				}
-			}
-			.padding()
-			.background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 16))
-			.padding(.horizontal, 40)
-			.padding(.bottom, 40)
-		}
-		.padding(.top, 60)
-	}
-	.frame(width: 900, height: 700)
-}
-
 private func shortcutRow(icon: String, text: String) -> some View {
 	HStack(spacing: 12) {
 		Image(systemName: icon)
@@ -88,9 +22,11 @@ private func shortcutRow(icon: String, text: String) -> some View {
 // MARK: - Preview Multi-Section
 
 #Preview("Multi-Section Spotlight") {
-	@Previewable @StateObject var viewModelSpotlight = SpotlightViewModel.initMultipleSection(
-		directory: URL(fileURLWithPath: "/Users/eliorodr2104/Downloads"),
-		fileExtensions: ["pdf"],
+	let viewModelSpotlight = MultiSectionSpotlightViewModel<SpotlightFileItem>(
+		dataSource: FileSystemDataSource(
+			directory: URL(fileURLWithPath: "/Users/eliorodr2104/Downloads"),
+			fileExtensions: ["pdf"],
+		),
 		sections: [
 			SpotlightSection(
 				id: "recent",
@@ -146,7 +82,7 @@ private func shortcutRow(icon: String, text: String) -> some View {
 			fileExtensions: ["pdf"]
 		)
 		
-		let vm = SpotlightViewModel<SpotlightFileItem>(
+		let vm = FileSearchSpotlightViewModel<SpotlightFileItem>(
 			dataSource: dataSource,
 			configuration: .init(
 				debounceInterval: 100,
@@ -179,7 +115,7 @@ private func shortcutRow(icon: String, text: String) -> some View {
 				.font(.title2)
 				.fontWeight(.semibold)
 			
-			SpotlightView(viewModel: viewModel, width: 450)
+			FileSearchSpotlightView(viewModel: viewModel, width: 450)
 				.padding(.top, 20)
 				.clipShape(.rect(cornerRadius: 12))
 			

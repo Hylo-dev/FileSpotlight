@@ -37,8 +37,8 @@ public class SpotlightBuilder<Item: SpotlightItem> {
 		return self
 	}
 	
-	public func build() -> SpotlightViewModel<Item> {
-		SpotlightViewModel(
+	public func build() -> CustomSpotlightViewModel<Item> {
+		CustomSpotlightViewModel(
 			dataSource: dataSource,
 			sections: sections,
 			configuration: configuration,

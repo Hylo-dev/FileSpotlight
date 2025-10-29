@@ -8,12 +8,12 @@
 import SwiftUI
 
 public struct MultiSectionSpotlightView<Item: SpotlightItem>: View {
-	@ObservedObject private var viewModel: SpotlightViewModel<Item>
+	@ObservedObject private var viewModel: MultiSectionSpotlightViewModel<Item>
 	
 	private let width: CGFloat
 	private var shape: AnyShape = AnyShape(RoundedRectangle(cornerRadius: 36))
 	
-	public init(viewModel: SpotlightViewModel<Item>, width: CGFloat = 600) {
+	public init(viewModel: MultiSectionSpotlightViewModel<Item>, width: CGFloat = 600) {
 		self.viewModel = viewModel
 		self.width	   = width
 	}
