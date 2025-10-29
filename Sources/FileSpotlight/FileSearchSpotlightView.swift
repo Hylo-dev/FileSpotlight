@@ -132,10 +132,10 @@ public struct FileSearchSpotlightView<Item: SpotlightItem>: View {
 						
 						// The view for a single result row.
 						DefaultSpotlightRowView(
-							item: item,
+							item	  : item,
 							isSelected: isSelected,
-							style: viewModel.rowStyle,
-							onTap: {
+							style	  : viewModel.rowStyle,
+							onTap	  : {
 								// On tap, update the selected index and trigger the selection action.
 								viewModel.selectedIndex = index
 								viewModel.selectCurrent()

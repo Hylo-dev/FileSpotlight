@@ -58,10 +58,12 @@ public class MultiSectionSpotlightViewModel<Item: SpotlightItem>: ObservableObje
 
 	// MARK: - Private Properties
 
-	private var dataSource: (any SpotlightDataSource)?
-	private var allItems: [Item] = []
+	private var dataSource	: (any SpotlightDataSource)?
+	
+	private var allItems	: [Item] 			  = []
 	private var cancellables: Set<AnyCancellable> = []
-	private var searchTask: Task<Void, Never>?
+	
+	private var searchTask	: Task<Void, Never>?
 
 	// MARK: - Initialization
 
@@ -76,10 +78,10 @@ public class MultiSectionSpotlightViewModel<Item: SpotlightItem>: ObservableObje
 	///   - configuration: General configuration.
 	///   - rowStyle: Style for each search result row.
 	public init(
-		dataSource: (any SpotlightDataSource),
-		sections: [SpotlightSection<Item>] = [],
-		configuration: SpotlightConfiguration = .default,
-		rowStyle: SpotlightRowStyle = .default
+		dataSource	 : (any SpotlightDataSource),
+		sections	 : [SpotlightSection<Item>] = [],
+		configuration: SpotlightConfiguration   = .default,
+		rowStyle	 : SpotlightRowStyle 	    = .default
 	) {
 		self.dataSource    = dataSource
 		self.sections      = sections
@@ -89,10 +91,10 @@ public class MultiSectionSpotlightViewModel<Item: SpotlightItem>: ObservableObje
 		// If a "home" section isn't already provided, create one from the configuration.
 		if !self.sections.contains(where: { $0.id == configuration.title.lowercased() }) {
 			let home = SpotlightSection<SpotlightFileItem>(
-				id: configuration.title.lowercased(),
-				title: configuration.title,
-				icon: configuration.icon,
-				view: { EmptyView() },
+				id	 	: configuration.title.lowercased(),
+				title	: configuration.title,
+				icon 	: configuration.icon,
+				view 	: { EmptyView() },
 				onSelect: configuration.onSelect
 			)
 			
@@ -145,6 +147,7 @@ public class MultiSectionSpotlightViewModel<Item: SpotlightItem>: ObservableObje
 	public func selectCurrent() {
 		guard !searchResults.isEmpty, selectedIndex < searchResults.count else { return }
 		let item = searchResults[selectedIndex]
+		
 		handleSelection(item)
 	}
 
@@ -231,6 +234,7 @@ public class MultiSectionSpotlightViewModel<Item: SpotlightItem>: ObservableObje
 
 		if let fileDataSource = dataSource as? FileSystemDataSource {
 			let items = await fileDataSource.search(query: query)
+			
 			return items as! [Item]
 		}
 
@@ -244,9 +248,7 @@ public class MultiSectionSpotlightViewModel<Item: SpotlightItem>: ObservableObje
 		$searchText
 			.debounce(for: .milliseconds(configuration.debounceInterval), scheduler: RunLoop.main)
 			.removeDuplicates()
-			.sink { [weak self] query in
-				self?.performSearch(query: query)
-			}
+			.sink { [weak self] query in self?.performSearch(query: query) }
 			.store(in: &cancellables)
 	}
 
@@ -256,6 +258,7 @@ public class MultiSectionSpotlightViewModel<Item: SpotlightItem>: ObservableObje
 		Task { @MainActor in
 			if let fileDataSource = dataSource as? FileSystemDataSource {
 				let items = await fileDataSource.allItems()
+				
 				self.allItems = items as! [Item]
 			}
 		}
@@ -288,20 +291,23 @@ public class MultiSectionSpotlightViewModel<Item: SpotlightItem>: ObservableObje
 				if let fileDataSource = dataSource as? FileSystemDataSource {
 					let items = await fileDataSource.search(query: query)
 					results = items as! [Item]
+					
 				}
+				
 			} else {
 				results = allItems.filter { item in
 					item.displayName.localizedCaseInsensitiveContains(query)
 				}
+				
 			}
 
 			guard !Task.isCancelled else { return }
 
 			withAnimation(.easeInOut(duration: configuration.animationDuration)) {
 				searchResults = results
-				state = results.isEmpty ? .searching : .showingResults
+				state 		  = results.isEmpty ? .searching : .showingResults
 				selectedIndex = 0
-				isLoading = false
+				isLoading	  = false
 			}
 		}
 

@@ -54,10 +54,12 @@ public class FileSearchSpotlightViewModel<Item: SpotlightItem>: ObservableObject
 	
 	// MARK: - Private Properties
 	
-	private var dataSource: (any SpotlightDataSource)?
-	private var allItems: [Item] = []
+	private var dataSource 	: (any SpotlightDataSource)?
+	
+	private var allItems	: [Item]			  = []
 	private var cancellables: Set<AnyCancellable> = []
-	private var searchTask: Task<Void, Never>?
+	
+	private var searchTask	: Task<Void, Never>?
 	
 	// MARK: - Initialization
 	
@@ -65,13 +67,12 @@ public class FileSearchSpotlightViewModel<Item: SpotlightItem>: ObservableObject
 	///
 	/// - Parameters:
 	///   - dataSource: Optional custom data source for async search.
-	///   - sections: Sections shown in the Spotlight.
 	///   - configuration: General configuration.
 	///   - rowStyle: Style for each search result row.
 	///
 	/// - Example:
 	/// ```swift
-	/// let vm = SpotlightViewModel<SpotlightFileItem>(
+	/// let vm = FileSearchSpotlightViewModel<SpotlightFileItem>(
 	///     		dataSource: FileSystemDataSource(directory: url, fileExtensions: ["txt"]),
 	///     		configuration: .init(
 	///     			debounceInterval: 100,
@@ -80,15 +81,15 @@ public class FileSearchSpotlightViewModel<Item: SpotlightItem>: ObservableObject
 	/// 		  )
 	/// ```
 	public init(
-		dataSource: (any SpotlightDataSource),
+		dataSource	 : (any SpotlightDataSource),
 		configuration: SpotlightConfiguration = .default,
-		rowStyle: SpotlightRowStyle = .default
+		rowStyle	 : SpotlightRowStyle = .default
 	) {
 		let home = SpotlightSection<SpotlightFileItem>(
-			id: configuration.title.lowercased(),
-			title: configuration.title,
-			icon: configuration.icon,
-			view: { EmptyView() },
+			id	    : configuration.title.lowercased(),
+			title	: configuration.title,
+			icon    : configuration.icon,
+			view 	: { EmptyView() },
 			onSelect: configuration.onSelect
 		)
 		
@@ -152,6 +153,7 @@ public class FileSearchSpotlightViewModel<Item: SpotlightItem>: ObservableObject
 	public func selectCurrent() {
 		guard !searchResults.isEmpty, selectedIndex < searchResults.count else { return }
 		let item = searchResults[selectedIndex]
+		
 		handleSelection(item)
 	}
 	
@@ -227,6 +229,7 @@ public class FileSearchSpotlightViewModel<Item: SpotlightItem>: ObservableObject
 		
 		if let fileDataSource = dataSource as? FileSystemDataSource {
 			let items = await fileDataSource.search(query: query)
+			
 			return items as! [Item]
 		}
 		
@@ -242,9 +245,7 @@ public class FileSearchSpotlightViewModel<Item: SpotlightItem>: ObservableObject
 		$searchText
 			.debounce(for: .milliseconds(configuration.debounceInterval), scheduler: RunLoop.main)
 			.removeDuplicates()
-			.sink { [weak self] query in
-				self?.performSearch(query: query)
-			}
+			.sink { [weak self] query in self?.performSearch(query: query) }
 			.store(in: &cancellables)
 	}
 	
@@ -256,6 +257,7 @@ public class FileSearchSpotlightViewModel<Item: SpotlightItem>: ObservableObject
 		Task { @MainActor in
 			if let fileDataSource = dataSource as? FileSystemDataSource {
 				let items = await fileDataSource.allItems()
+				
 				self.allItems = items as! [Item]
 			}
 		}
@@ -266,9 +268,7 @@ public class FileSearchSpotlightViewModel<Item: SpotlightItem>: ObservableObject
 	/// - Parameter query: The search text to perform.
 	/// - Note: Calls into `performSearchOnMainActor(query:)`.
 	private nonisolated func performSearch(query: String) {
-		Task { @MainActor in
-			await self.performSearchOnMainActor(query: query)
-		}
+		Task { @MainActor in await self.performSearchOnMainActor(query: query) }
 	}
 	
 	/// Performs the actual search on the Main actor, updating UI state.
@@ -294,11 +294,14 @@ public class FileSearchSpotlightViewModel<Item: SpotlightItem>: ObservableObject
 				if let fileDataSource = dataSource as? FileSystemDataSource {
 					let items = await fileDataSource.search(query: query)
 					results = items as! [Item]
+					
 				}
+				
 			} else {
 				results = allItems.filter { item in
 					item.displayName.localizedCaseInsensitiveContains(query)
 				}
+				
 			}
 			
 			guard !Task.isCancelled else { return }

@@ -16,7 +16,7 @@ import Combine
 ///
 /// - Example:
 /// ```swift
-/// let viewModel = SpotlightViewModel<SpotlightFileItem>(
+/// let viewModel = CustomSpotlightViewModel<SpotlightFileItem>(
 ///     dataSource: FileSystemDataSource(directory: url, fileExtensions: ["txt"]),
 ///     configuration: .init(title: "Files")
 /// )
@@ -31,9 +31,6 @@ public class CustomSpotlightViewModel<Item: SpotlightItem>: ObservableObject {
 	
 	/// Index of the currently selected item in search results.
 	@Published public var selectedIndex: Int = 0
-	
-	/// Index of the currently selected section.
-	@Published public var selectedSection: Int = 0
 	
 	/// Current view state of the Spotlight (idle, searching, results, etc.).
 	@Published public var state: SpotlightState = .idle
@@ -53,14 +50,16 @@ public class CustomSpotlightViewModel<Item: SpotlightItem>: ObservableObject {
 	public let rowStyle: SpotlightRowStyle
 	
 	/// The list of available sections in the Spotlight.
-	public private(set) var sections: [SpotlightSection<Item>]
+	private var sections: [SpotlightSection<Item>]
 	
 	// MARK: - Private Properties
 	
-	private var dataSource: (any SpotlightDataSource)?
-	private var allItems: [Item] = []
+	private var dataSource	: (any SpotlightDataSource)?
+	
+	private var allItems	: [Item] 			  = []
 	private var cancellables: Set<AnyCancellable> = []
-	private var searchTask: Task<Void, Never>?
+	
+	private var searchTask	: Task<Void, Never>?
 	
 	// MARK: - Initialization
 	
@@ -74,7 +73,7 @@ public class CustomSpotlightViewModel<Item: SpotlightItem>: ObservableObject {
 	///
 	/// - Example:
 	/// ```swift
-	/// let vm = SpotlightViewModel<SpotlightFileItem>(
+	/// let vm = CustomSpotlightViewModel<SpotlightFileItem>(
 	///     		dataSource: FileSystemDataSource(directory: url, fileExtensions: ["txt"]),
 	///     		configuration: .init(
 	///     			debounceInterval: 100,
@@ -83,10 +82,10 @@ public class CustomSpotlightViewModel<Item: SpotlightItem>: ObservableObject {
 	/// 		  )
 	/// ```
 	public init(
-		dataSource: (any SpotlightDataSource)? = nil,
-		sections: [SpotlightSection<Item>] = [],
-		configuration: SpotlightConfiguration = .default,
-		rowStyle: SpotlightRowStyle = .default
+		dataSource	 : (any SpotlightDataSource)? = nil,
+		sections	 : [SpotlightSection<Item>]   = [],
+		configuration: SpotlightConfiguration     = .default,
+		rowStyle	 : SpotlightRowStyle 		  = .default
 	) {
 		self.dataSource    = dataSource
 		self.sections      = sections
@@ -94,10 +93,10 @@ public class CustomSpotlightViewModel<Item: SpotlightItem>: ObservableObject {
 		self.rowStyle      = rowStyle
 		
 		let home = SpotlightSection<SpotlightFileItem>(
-			id: configuration.title.lowercased(),
-			title: configuration.title,
-			icon: configuration.icon,
-			view: { EmptyView() },
+			id	 	: configuration.title.lowercased(),
+			title	: configuration.title,
+			icon 	: configuration.icon,
+			view    : { EmptyView() },
 			onSelect: configuration.onSelect
 		)
 		
@@ -109,28 +108,15 @@ public class CustomSpotlightViewModel<Item: SpotlightItem>: ObservableObject {
 	
 	// MARK: - Public Methods
 	
-	/// Adds a new section to the Spotlight.
+	/// Returns home section.
 	///
-	/// - Parameter section: The `SpotlightSection` to append.
-	/// - Note: The section will appear in `sections` and be considered for navigation.
+	/// - Returns: Item of `SpotlightSection`.
 	/// - Example:
 	/// ```swift
-	/// viewModel.addSection(mySection)
+	/// let home = viewModel.visibleSections()
 	/// ```
-	public func addSection(_ section: SpotlightSection<Item>) {
-		sections.append(section)
-	}
-	
-	/// Removes a section by its unique identifier.
-	///
-	/// - Parameter id: The section `id` to remove.
-	/// - Note: If multiple sections share the same id, all will be removed.
-	/// - Example:
-	/// ```swift
-	/// viewModel.removeSection(withId: "extensions")
-	/// ```
-	public func removeSection(withId id: String) {
-		sections.removeAll { $0.id == id }
+	public func getPrincipalSection() -> SpotlightSection<Item> {
+		sections.first!
 	}
 	
 	/// Returns all currently visible sections.
@@ -154,7 +140,6 @@ public class CustomSpotlightViewModel<Item: SpotlightItem>: ObservableObject {
 	public func reset() {
 		searchText	    = ""
 		selectedIndex   = 0
-		selectedSection = 0
 		searchResults   = []
 		state		    = .idle
 	}
@@ -209,32 +194,6 @@ public class CustomSpotlightViewModel<Item: SpotlightItem>: ObservableObject {
 		}
 	}
 	
-	/// Moves to the previous section (if idle).
-	///
-	/// - Note: Only allowed when `state == .idle`.
-	/// - Example:
-	/// ```swift
-	/// viewModel.navigateLeft()
-	/// ```
-	public func navigateLeft() {
-		if selectedSection > 0 && state == .idle {
-			selectedSection -= 1
-		}
-	}
-	
-	/// Moves to the next section (if idle).
-	///
-	/// - Note: Only allowed when `state == .idle`.
-	/// - Example:
-	/// ```swift
-	/// viewModel.navigateRight()
-	/// ```
-	public func navigateRight() {
-		if selectedSection < sections.count - 1 && state == .idle {
-			selectedSection += 1
-		}
-	}
-	
 	/// Handles a key press event for navigation or selection.
 	///
 	/// - Parameter keyPress: The key event to handle.
@@ -253,27 +212,9 @@ public class CustomSpotlightViewModel<Item: SpotlightItem>: ObservableObject {
 			case .upArrow:
 				navigateUp()
 				return .handled
-					
-			case .leftArrow:
-				withAnimation(.spring(response: 0.6, dampingFraction: 0.8)) {
-					navigateLeft()
-				}
-				return .handled
-				
-			case .rightArrow:
-				withAnimation(.spring(response: 0.6, dampingFraction: 0.8)) {
-					navigateRight()
-				}
-				return .handled
-				
+								
 			case .return:
-				if selectedSection == 0 || state == .focusSection {
-					selectCurrent()
-				} else {
-					withAnimation(.spring(response: 0.6, dampingFraction: 0.8)) {
-						state = .focusSection
-					}
-				}
+				selectCurrent()
 				return .handled
 				
 			case .escape:
@@ -299,6 +240,7 @@ public class CustomSpotlightViewModel<Item: SpotlightItem>: ObservableObject {
 		
 		if let fileDataSource = dataSource as? FileSystemDataSource {
 			let items = await fileDataSource.search(query: query)
+			
 			return items as! [Item]
 		}
 		
@@ -328,6 +270,7 @@ public class CustomSpotlightViewModel<Item: SpotlightItem>: ObservableObject {
 		Task { @MainActor in
 			if let fileDataSource = dataSource as? FileSystemDataSource {
 				let items = await fileDataSource.allItems()
+				
 				self.allItems = items as! [Item]
 			}
 		}
@@ -338,9 +281,7 @@ public class CustomSpotlightViewModel<Item: SpotlightItem>: ObservableObject {
 	/// - Parameter query: The search text to perform.
 	/// - Note: Calls into `performSearchOnMainActor(query:)`.
 	private nonisolated func performSearch(query: String) {
-		Task { @MainActor in
-			await self.performSearchOnMainActor(query: query)
-		}
+		Task { @MainActor in await self.performSearchOnMainActor(query: query) }
 	}
 	
 	/// Performs the actual search on the Main actor, updating UI state.
@@ -365,12 +306,15 @@ public class CustomSpotlightViewModel<Item: SpotlightItem>: ObservableObject {
 			if let dataSource = dataSource {
 				if let fileDataSource = dataSource as? FileSystemDataSource {
 					let items = await fileDataSource.search(query: query)
+					
 					results = items as! [Item]
 				}
+				
 			} else {
 				results = allItems.filter { item in
 					item.displayName.localizedCaseInsensitiveContains(query)
 				}
+				
 			}
 			
 			guard !Task.isCancelled else { return }
@@ -391,7 +335,7 @@ public class CustomSpotlightViewModel<Item: SpotlightItem>: ObservableObject {
 	/// - Parameter item: The item that was selected.
 	/// - Note: Calls the current section's `onSelect` callback on the Main actor and then resets the view model.
 	private func handleSelection(_ item: Item) {
-		let section = sections[selectedSection]
+		let section = getPrincipalSection()
 		Task { @MainActor in
 			section.onSelect(item)
 			reset()
