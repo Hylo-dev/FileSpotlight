@@ -50,7 +50,7 @@ public struct MultiSectionSpotlightView<Item: SpotlightItem>: View {
 	public var body: some View {
 		VStack(spacing: 0) {
 			// A custom container that applies a glass-like visual effect.
-			GlassEffectContainer {
+			GlassEffectContainer(spacing: 18) {
 				HStack(spacing: 15) {
 					// Dynamically calculate the width of the main text/results area.
 					// It shrinks to make space for the section icons when the view is idle and a section is selected.
@@ -75,6 +75,7 @@ public struct MultiSectionSpotlightView<Item: SpotlightItem>: View {
 					}
 					.frame(width: textAreaWidth)
 					.glassEffect(.regular, in: shape) // Apply glass effect to the main content area.
+					.animation(.spring(response: 0.5, dampingFraction: 0.7), value: textAreaWidth)
 					.onKeyPress { keyPress in
 						// Forward key press events to the view model for handling navigation (e.g., arrow keys).
 						viewModel.handleKeyPress(keyPress)						
@@ -85,7 +86,7 @@ public struct MultiSectionSpotlightView<Item: SpotlightItem>: View {
 					// and the user is not in the primary (index 0) search section.
 					if viewModel.state == .idle &&
 						!viewModel.visibleSections().isEmpty &&
-						viewModel.selectedSection != 0
+						viewModel.selectedSection > 0
 					{
 						sectionsView
 					}
@@ -155,7 +156,23 @@ public struct MultiSectionSpotlightView<Item: SpotlightItem>: View {
 		// The `enumerated()` call provides the index, which is used to identify the section.
 		// The first section (index 0) is skipped as it's the main search view.
 		ForEach(viewModel.visibleSections().enumerated(), id: \.element.id) { index, section in
-			if index != 0 { sectionView(section, index) }
+			if index != 0 {
+				sectionView(section, index)
+					.transition(
+						.asymmetric(
+							insertion: .move(edge: .leading)
+								.combined(with: .opacity)
+								.combined(with: .scale(scale: 0.8)),
+							removal: .move(edge: .leading)
+								.combined(with: .opacity)
+						)
+					)
+					.animation(
+						.spring(response: 0.5, dampingFraction: 0.8)
+							.delay(Double(index) * 0.15),
+						value: viewModel.visibleSections().count
+					)
+			}
 		}
 	}
 
@@ -165,6 +182,8 @@ public struct MultiSectionSpotlightView<Item: SpotlightItem>: View {
 	///   - index: The index of the section.
 	/// - Returns: A button view for the section.
 	private func sectionView(_ section: SpotlightSection<Item>, _ index: Int) -> some View {
+		let isSelected = viewModel.selectedSection == index
+		
 		return Button {
 			// When tapped, animate the selection of the new section.
 			withAnimation(.spring(response: 0.6, dampingFraction: 0.8)) {
@@ -174,21 +193,16 @@ public struct MultiSectionSpotlightView<Item: SpotlightItem>: View {
 		} label: {
 			Image(systemName: section.icon ?? "gearshape")
 				.font(self.sizeIconSection)
-				.frame(width: sizeButtonSection, height: sizeButtonSection)
-				.contentShape(Circle()) // Ensures the entire circular area is tappable.
+			
 		}
+		.frame(width: sizeButtonSection, height: sizeButtonSection)
 		.buttonStyle(.plain)
 		.glassEffect(
 			// Apply a tint to the glass effect if this section is currently selected.
-			.regular.tint(
-				viewModel.selectedSection == index ?
-				Color.accentColor :
-				Color.clear
-			),
+			.regular.tint(isSelected ? Color.accentColor : Color.clear),
 			in: .circle
 		)
 		.clipShape(Circle())
-		.transition(.move(edge: .leading).combined(with: .opacity)) // Animate the appearance/disappearance.
 	}
 
 	/// The view that displays the content for the currently selected section.

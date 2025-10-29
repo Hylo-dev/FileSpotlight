@@ -195,13 +195,13 @@ public class MultiSectionSpotlightViewModel<Item: SpotlightItem>: ObservableObje
 			return .handled
 
 		case .leftArrow:
-			withAnimation(.spring(response: 0.6, dampingFraction: 0.8)) {
+				withAnimation(.interpolatingSpring(stiffness: 180, damping: 14)) {
 				navigateLeft()
 			}
 			return .handled
 
 		case .rightArrow:
-			withAnimation(.spring(response: 0.6, dampingFraction: 0.8)) {
+			withAnimation(.interpolatingSpring(stiffness: 180, damping: 14)) {
 				navigateRight()
 			}
 			return .handled
