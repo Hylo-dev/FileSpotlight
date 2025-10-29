@@ -9,8 +9,8 @@ import SwiftUI
 
 /// Configurazione completa dello spotlight
 public struct SpotlightConfiguration: Sendable {
-	public var placeholder: String
-	public var searchIcon: String
+	public var title		   : String
+	public var icon			   : String
 	public var debounceInterval: Int
 	public var maxHeight: CGFloat
 	public var cornerRadius: CGFloat
@@ -18,20 +18,23 @@ public struct SpotlightConfiguration: Sendable {
 	public var animationDuration: Double
 	public var animationResponse: Double
 	public var animationDamping: Double
+	public var onSelect		   : @MainActor (SpotlightFileItem) -> Void
 	
 	public init(
-		placeholder: String = "Search...",
-		searchIcon: String = "magnifyingglass",
+		title			: String = "Search",
+		icon			: String = "doc.text",
 		debounceInterval: Int = 150,
 		maxHeight: CGFloat = 300,
 		cornerRadius: CGFloat = 36,
 		showDividers: Bool = true,
 		animationDuration: Double = 0.15,
 		animationResponse: Double = 0.6,
-		animationDamping: Double = 0.8
+		animationDamping: Double = 0.8,
+		onSelect		: @escaping @MainActor (SpotlightFileItem) -> Void = { _ in }
 	) {
-		self.placeholder = placeholder
-		self.searchIcon = searchIcon
+		
+		self.title			  = title
+		self.icon			  = icon
 		self.debounceInterval = debounceInterval
 		self.maxHeight = maxHeight
 		self.cornerRadius = cornerRadius
@@ -39,6 +42,7 @@ public struct SpotlightConfiguration: Sendable {
 		self.animationDuration = animationDuration
 		self.animationResponse = animationResponse
 		self.animationDamping = animationDamping
+		self.onSelect 		  = onSelect
 	}
 	
 	public static let `default` = SpotlightConfiguration()

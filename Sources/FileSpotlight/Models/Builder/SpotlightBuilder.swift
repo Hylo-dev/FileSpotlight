@@ -60,6 +60,6 @@ extension SpotlightBuilder where Item == SpotlightFileItem {
 		
 		return builder
 			.withDataSource(dataSource)
-			.withConfiguration(.init(placeholder: "Search Files"))
+			.withConfiguration(.init())
 	}
 }

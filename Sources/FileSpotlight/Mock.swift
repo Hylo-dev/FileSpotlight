@@ -6,54 +6,19 @@
 //
 
 import SwiftUI
-
-// MARK: - Mock Data Source per Preview
-
-struct MockFileDataSource: SpotlightDataSource {
-	func allItems() async -> [SpotlightFileItem] {
-		return mockFiles
-	}
-	
-	func search(query: String) async -> [SpotlightFileItem] {
-		guard !query.isEmpty else { return [] }
-		return mockFiles.filter { $0.displayName.localizedCaseInsensitiveContains(query) }
-	}
-	
-	private var mockFiles: [SpotlightFileItem] {
-		[
-			SpotlightFileItem(
-				name: "Cap_01_compressed.pdf",
-				subtitle: "/Users/eliorodr2104/Downloads",
-				icon: .systemImage("doc.text")
-			)
-		]
-	}
-}
-
 // MARK: - Preview con Mock Data
 
 #Preview("Spotlight with Mock Data") {
-	@Previewable @StateObject var viewModel = {
-		let vm = SpotlightViewModel<SpotlightFileItem>(
-			dataSource: MockFileDataSource(),
-			configuration: .init(
-				placeholder: "Search files...",
-				searchIcon: "magnifyingglass",
-				debounceInterval: 150,
-				maxHeight: 400,
-				cornerRadius: 24,
-				showDividers: true
-			),
-			rowStyle: .init(
-				backgroundColor: { selected in
-					selected ? Color.accentColor.opacity(0.2) : Color.clear
-				},
-				cornerRadius: 10,
-				iconSize: 28
-			)
+	@Previewable @StateObject var viewModel = SpotlightViewModel<SpotlightFileItem>.fileSearch(
+		directory: URL(fileURLWithPath: "/Users/eliorodr2104/Downloads"),
+		fileExtensions: ["pdf"],
+		configuration: .init(
+			debounceInterval: 150,
+			maxHeight: 400,
+			cornerRadius: 24,
+			showDividers: true
 		)
-		return vm
-	}()
+	)
 	
 	ZStack {
 		// Background gradient
@@ -131,7 +96,6 @@ private func shortcutRow(icon: String, text: String) -> some View {
 		let vm = SpotlightViewModel<SpotlightFileItem>(
 			dataSource: dataSource,
 			configuration: .init(
-				placeholder: "Search everywhere...",
 				cornerRadius: 20
 			)
 		)
@@ -218,148 +182,18 @@ private func shortcutRow(icon: String, text: String) -> some View {
 	.frame(width: 900, height: 700)
 }
 
-// MARK: - Preview Custom Commands
-
-struct CommandItem: SpotlightItem {
-	let id = UUID()
-	let displayName: String
-	let subtitle: String?
-	let iconProvider: SpotlightIconProvider
-	let action: @Sendable () -> Void
-	
-	init(name: String, subtitle: String, icon: String, action: @Sendable @escaping () -> Void = {}) {
-		self.displayName = name
-		self.subtitle = subtitle
-		self.iconProvider = .systemImage(icon)
-		self.action = action
-	}
-	
-	static func == (lhs: CommandItem, rhs: CommandItem) -> Bool {
-		lhs.id == rhs.id
-	}
-}
-
-struct MockCommandDataSource: SpotlightDataSource {
-	func allItems() async -> [CommandItem] {
-		return commands
-	}
-	
-	func search(query: String) async -> [CommandItem] {
-		guard !query.isEmpty else { return [] }
-		return commands.filter { $0.displayName.localizedCaseInsensitiveContains(query) }
-	}
-	
-	private var commands: [CommandItem] {
-		[
-			CommandItem(
-				name: "New File",
-				subtitle: "Create a new file in current directory",
-				icon: "doc.badge.plus",
-				action: { print("Creating new file") }
-			),
-			CommandItem(
-				name: "Open Settings",
-				subtitle: "Configure application preferences",
-				icon: "gearshape.fill",
-				action: { print("Opening settings") }
-			),
-			CommandItem(
-				name: "Toggle Theme",
-				subtitle: "Switch between light and dark mode",
-				icon: "moon.stars.fill",
-				action: { print("Toggling theme") }
-			),
-			CommandItem(
-				name: "Run Build",
-				subtitle: "Compile and build the project",
-				icon: "hammer.fill",
-				action: { print("Building project") }
-			),
-			CommandItem(
-				name: "Search Files",
-				subtitle: "Find files in project",
-				icon: "magnifyingglass",
-				action: { print("Searching files") }
-			),
-			CommandItem(
-				name: "Git Commit",
-				subtitle: "Commit current changes",
-				icon: "arrow.triangle.branch",
-				action: { print("Committing changes") }
-			),
-			CommandItem(
-				name: "Terminal",
-				subtitle: "Open integrated terminal",
-				icon: "terminal.fill",
-				action: { print("Opening terminal") }
-			)
-		]
-	}
-}
-
-#Preview("Command Palette") {
-	@Previewable @StateObject var viewModel = {
-		let vm = SpotlightViewModel<CommandItem>(
-			dataSource: MockCommandDataSource(),
-			configuration: .init(
-				placeholder: "Type a command...",
-				searchIcon: "command",
-				maxHeight: 450, cornerRadius: 16
-			),
-			rowStyle: .init(
-				backgroundColor: { selected in
-					selected ? Color.blue.opacity(0.15) : Color.clear
-				},
-				textColor: .primary,
-				subtitleColor: .secondary,
-				cornerRadius: 8,
-				iconSize: 24
-			)
-		)
-		return vm
-	}()
-	
-	ZStack {
-		// Dark background
-		Color.black
-			.ignoresSafeArea()
-		
-		VStack(spacing: 25) {
-			HStack(spacing: 15) {
-				Image(systemName: "command.circle.fill")
-					.font(.system(size: 50))
-					.foregroundColor(.blue)
-				
-				VStack(alignment: .leading, spacing: 4) {
-					Text("Command Palette")
-						.font(.title)
-						.fontWeight(.bold)
-						.foregroundColor(.white)
-					
-					Text("Quick access to all commands")
-						.font(.subheadline)
-						.foregroundColor(.white.opacity(0.7))
-				}
-			}
-			
-			SpotlightView(viewModel: viewModel, width: 600)
-			
-			Spacer()
-		}
-		.padding(.top, 80)
-	}
-	.frame(width: 900, height: 700)
-}
-
 // MARK: - Preview Compact Style
 
 #Preview("Compact Style") {
 	@Previewable @StateObject var viewModel = {
+		let dataSource = FileSystemDataSource(
+			directory: URL(fileURLWithPath: "/Users/eliorodr2104/Downloads"),
+			fileExtensions: ["pdf"]
+		)
+		
 		let vm = SpotlightViewModel<SpotlightFileItem>(
-			dataSource: MockFileDataSource(),
+			dataSource: dataSource,
 			configuration: .init(
-				placeholder: "Quick search...",
-				searchIcon: "sparkle.magnifyingglass",
 				debounceInterval: 100,
 				maxHeight: 250,
 				cornerRadius: 12
@@ -374,6 +208,7 @@ struct MockCommandDataSource: SpotlightDataSource {
 				iconSize: 22
 			)
 		)
+		
 		return vm
 	}()
 	

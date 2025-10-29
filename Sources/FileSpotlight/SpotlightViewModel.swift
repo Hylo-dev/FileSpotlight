@@ -45,15 +45,25 @@ public class SpotlightViewModel<Item: SpotlightItem>: ObservableObject {
 	// MARK: - Initialization
 	
 	public init(
-		dataSource: (any SpotlightDataSource)? = nil,
-		sections: [SpotlightSection<Item>] = [],
-		configuration: SpotlightConfiguration = .default,
-		rowStyle: SpotlightRowStyle = .default
+		dataSource		: (any SpotlightDataSource)? = nil,
+		sections		: [SpotlightSection<Item>]   = [],
+		configuration	: SpotlightConfiguration     = .default,
+		rowStyle		: SpotlightRowStyle 		 = .default,
 	) {
-		self.dataSource = dataSource
-		self.sections = sections
+		self.dataSource    = dataSource
+		self.sections      = sections
 		self.configuration = configuration
-		self.rowStyle = rowStyle
+		self.rowStyle      = rowStyle
+		
+		let home = SpotlightSection<SpotlightFileItem>(
+			id	    : self.configuration.title.lowercased(),
+			title   : self.configuration.title,
+			icon    : self.configuration.icon,
+			items	: { [] },
+			onSelect: self.configuration.onSelect
+		)
+		
+		self.sections.append(home as! SpotlightSection<Item>)
 		
 		setupSearchBinding()
 		loadInitialData()
@@ -253,7 +263,6 @@ extension SpotlightViewModel where Item == SpotlightFileItem {
 	public static func fileSearch(
 		directory: URL,
 		fileExtensions: [String]? = nil,
-		onSelect: @escaping @MainActor (SpotlightFileItem) -> Void,
 		configuration: SpotlightConfiguration = .default
 		
 	) -> SpotlightViewModel<SpotlightFileItem> {
@@ -262,17 +271,17 @@ extension SpotlightViewModel where Item == SpotlightFileItem {
 			fileExtensions: fileExtensions
 		)
 		
-		let section = SpotlightSection<SpotlightFileItem>(
-			id: "files",
-			title: "Files",
-			icon: "doc.text",
-			items: { [] }, // Gestito dal data source
-			onSelect: onSelect
+		let home = SpotlightSection<SpotlightFileItem>(
+			id	    : configuration.title.lowercased(),
+			title   : configuration.title,
+			icon    : configuration.icon,
+			items	: { [] },
+			onSelect: configuration.onSelect
 		)
 		
 		return SpotlightViewModel(
-			dataSource: dataSource,
-			sections: [section],
+			dataSource	 : dataSource,
+			sections	 : [home],
 			configuration: configuration
 		)
 	}

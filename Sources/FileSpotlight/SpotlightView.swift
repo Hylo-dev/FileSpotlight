@@ -45,13 +45,17 @@ public struct SpotlightView<Item: SpotlightItem>: View {
 	// MARK: - Search Bar
 	
 	private var searchBar: some View {
-		HStack(spacing: 12) {
-			Image(systemName: viewModel.configuration.searchIcon)
+		let item  = viewModel.sections[viewModel.selectedSection]
+		let icon  = item.icon ?? "gearshape"
+		let title = item.title ?? "nil"
+		
+		return HStack(spacing: 12) {
+			Image(systemName: icon)
 				.foregroundColor(.secondary)
 				.font(.title2)
 			
 			TextField(
-				viewModel.configuration.placeholder,
+				title,
 				text: $viewModel.searchText
 			)
 			.textFieldStyle(.plain)
@@ -158,13 +162,17 @@ public struct CustomSpotlightView<Item: SpotlightItem, RowView: SpotlightRowView
 	}
 	
 	private var searchBar: some View {
-		HStack(spacing: 12) {
-			Image(systemName: viewModel.configuration.searchIcon)
+		let item  = viewModel.sections[viewModel.selectedSection]
+		let icon  = item.icon ?? "gearshape"
+		let title = item.title ?? "nil"
+		
+		return HStack(spacing: 12) {
+			Image(systemName: icon)
 				.foregroundColor(.secondary)
 				.font(.title2)
 			
 			TextField(
-				viewModel.configuration.placeholder,
+				title,
 				text: $viewModel.searchText
 			)
 			.textFieldStyle(.plain)
@@ -243,12 +251,10 @@ public struct FileSpotlightView: View {
 		directory: URL,
 		fileExtensions: [String]? = nil,
 		configuration: SpotlightConfiguration = .default,
-		onSelect: @escaping @MainActor (SpotlightFileItem) -> Void
 	) {
 		_viewModel = StateObject(wrappedValue: .fileSearch(
 			directory: directory,
 			fileExtensions: fileExtensions,
-			onSelect: onSelect,
 			configuration: configuration
 		))
 	}
