@@ -9,13 +9,12 @@ import SwiftUI
 // MARK: - Preview con Mock Data
 
 #Preview("Spotlight with Mock Data") {
-	@Previewable @StateObject var viewModel = SpotlightViewModel<SpotlightFileItem>.fileSearch(
+	@Previewable @StateObject var viewModel = SpotlightViewModel<SpotlightFileItem>.initFileSearch(
 		directory: URL(fileURLWithPath: "/Users/eliorodr2104/Downloads"),
 		fileExtensions: ["pdf"],
 		configuration: .init(
 			debounceInterval: 150,
 			maxHeight: 400,
-			cornerRadius: 24,
 			showDividers: true
 		)
 	)
@@ -44,6 +43,7 @@ import SwiftUI
 			
 			SpotlightView(viewModel: viewModel, width: 600)
 				.padding(.top, 20)
+				.clipShape(.rect(cornerRadius: 24))
 			
 			Spacer()
 			
@@ -88,20 +88,10 @@ private func shortcutRow(icon: String, text: String) -> some View {
 // MARK: - Preview Multi-Section
 
 #Preview("Multi-Section Spotlight") {
-	@Previewable @StateObject var viewModel = {
-		let dataSource = FileSystemDataSource(
-			directory: URL(fileURLWithPath: "/Users/eliorodr2104/Downloads"),
-			fileExtensions: ["pdf"]
-		)
-		let vm = SpotlightViewModel<SpotlightFileItem>(
-			dataSource: dataSource,
-			configuration: .init(
-				cornerRadius: 20
-			)
-		)
-		
-		// Recent files section
-		vm.addSection(
+	@Previewable @StateObject var viewModelSpotlight = SpotlightViewModel.initMultipleSection(
+		directory: URL(fileURLWithPath: "/Users/eliorodr2104/Downloads"),
+		fileExtensions: ["pdf"],
+		sections: [
 			SpotlightSection(
 				id: "recent",
 				title: "Recent Files",
@@ -110,11 +100,8 @@ private func shortcutRow(icon: String, text: String) -> some View {
 				onSelect: { file in
 					print("Selected recent: \(file.displayName)")
 				}
-			)
-		)
-		
-		// Favorites section
-		vm.addSection(
+			),
+			
 			SpotlightSection(
 				id: "favorites",
 				title: "Favorites",
@@ -124,10 +111,8 @@ private func shortcutRow(icon: String, text: String) -> some View {
 					print("Selected favorite: \(file.displayName)")
 				}
 			)
-		)
-		
-		return vm
-	}()
+		]
+	)
 	
 	ZStack {
 		Color.black
@@ -142,7 +127,8 @@ private func shortcutRow(icon: String, text: String) -> some View {
 				.font(.subheadline)
 				.foregroundColor(.secondary)
 			
-			MultiSectionSpotlightView(viewModel: viewModel, width: 650)
+			MultiSectionSpotlightView(viewModel: viewModelSpotlight, width: 650)
+				.clipShape(.rect(cornerRadius: 20))
 			
 			Spacer()
 		}
@@ -164,8 +150,7 @@ private func shortcutRow(icon: String, text: String) -> some View {
 			dataSource: dataSource,
 			configuration: .init(
 				debounceInterval: 100,
-				maxHeight: 250,
-				cornerRadius: 12
+				maxHeight: 250
 			),
 			rowStyle: .init(
 				backgroundColor: { selected in
@@ -196,6 +181,7 @@ private func shortcutRow(icon: String, text: String) -> some View {
 			
 			SpotlightView(viewModel: viewModel, width: 450)
 				.padding(.top, 20)
+				.clipShape(.rect(cornerRadius: 12))
 			
 			Spacer()
 		}

@@ -10,5 +10,5 @@ import Foundation
 /// Provider per le icone degli item
 public enum SpotlightIconProvider: Sendable {
 	case systemImage(String)
-	case url(URL) // Automaticamente carica l'icona del file
+	case url(URL)
 }

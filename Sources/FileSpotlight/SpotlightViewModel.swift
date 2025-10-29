@@ -8,38 +8,32 @@
 import SwiftUI
 import Combine
 
-/// Stati dello spotlight
-public enum SpotlightState: Sendable {
-	case idle
-	case searching
-	case showingResults
-	case showingSections
-}
-
 /// ViewModel generico per lo spotlight
 @MainActor
 public class SpotlightViewModel<Item: SpotlightItem>: ObservableObject {
 	
 	// MARK: - Published Properties
 	
-	@Published public var searchText: String = ""
-	@Published public var selectedIndex: Int = 0
-	@Published public var selectedSection: Int = 0
-	@Published public var state: SpotlightState = .idle
-	@Published public var searchResults: [Item] = []
-	@Published public var isLoading: Bool = false
+	@Published public var searchText     : String 		  = ""
+	@Published public var selectedIndex  : Int 			  = 0
+	@Published public var selectedSection: Int 			  = 0
+	@Published public var state		     : SpotlightState = .idle
+	@Published public var searchResults  : [Item] 		  = []
+	@Published public var isLoading		 : Bool 		  = false
 	
 	// MARK: - Configuration
 	
-	public let configuration: SpotlightConfiguration
-	public let rowStyle: SpotlightRowStyle
+	public let configuration		: SpotlightConfiguration
+	public let rowStyle			    : SpotlightRowStyle
 	public private(set) var sections: [SpotlightSection<Item>]
 	
 	// MARK: - Private Properties
 	
 	private var dataSource: (any SpotlightDataSource)?
-	private var allItems: [Item] = []
-	private var cancellables = Set<AnyCancellable>()
+	
+	private var allItems	: [Item] 			  = []
+	private var cancellables: Set<AnyCancellable> = Set<AnyCancellable>()
+	
 	private var searchTask: Task<Void, Never>?
 	
 	// MARK: - Initialization
@@ -88,10 +82,11 @@ public class SpotlightViewModel<Item: SpotlightItem>: ObservableObject {
 	
 	/// Resetta lo spotlight
 	public func reset() {
-		searchText = ""
-		selectedIndex = 0
-		searchResults = []
-		state = .idle
+		searchText	    = ""
+		selectedIndex   = 0
+		selectedSection = 0
+		searchResults   = []
+		state		    = .idle
 	}
 	
 	/// Ricarica i dati
@@ -162,7 +157,14 @@ public class SpotlightViewModel<Item: SpotlightItem>: ObservableObject {
 				return .handled
 				
 			case .return:
-				selectCurrent()
+				if selectedSection == 0 || state == .focusSection {
+					selectCurrent()
+					
+				} else { withAnimation(.spring(response: 0.6, dampingFraction: 0.8)) { state = .focusSection } }
+				return .handled
+				
+			case .escape:
+				withAnimation(.spring(response: 0.6, dampingFraction: 0.8)) { reset() }
 				return .handled
 				
 			case .escape:
@@ -172,6 +174,17 @@ public class SpotlightViewModel<Item: SpotlightItem>: ObservableObject {
 			default:
 				return .ignored
 		}
+	}
+	
+	public func searchAsync(query: String) async -> [Item] {
+		guard let dataSource = dataSource else { return [] }
+		
+		if let fileDataSource = dataSource as? FileSystemDataSource {
+			let items = await fileDataSource.search(query: query)
+			return items as! [Item]
+		}
+		
+		return []
 	}
 	
 	// MARK: - Private Methods
@@ -260,9 +273,9 @@ public class SpotlightViewModel<Item: SpotlightItem>: ObservableObject {
 extension SpotlightViewModel where Item == SpotlightFileItem {
 	
 	/// Crea un ViewModel per la ricerca di file
-	public static func fileSearch(
+	public static func initFileSearch(
 		directory: URL,
-		fileExtensions: [String]? = nil,
+		fileExtensions: [String],
 		configuration: SpotlightConfiguration = .default
 		
 	) -> SpotlightViewModel<SpotlightFileItem> {
@@ -285,20 +298,33 @@ extension SpotlightViewModel where Item == SpotlightFileItem {
 			configuration: configuration
 		)
 	}
-}
-
-// MARK: - Async/Await Helpers
-
-extension SpotlightViewModel {
-	/// Cerca in modo asincrono
-	public func searchAsync(query: String) async -> [Item] {
-		guard let dataSource = dataSource else { return [] }
+	
+	public static func initMultipleSection(
+		directory	  : URL,
+		fileExtensions: [String],
+		configuration : SpotlightConfiguration = .default,
+		sections      : [SpotlightSection<Item>],
 		
-		if let fileDataSource = dataSource as? FileSystemDataSource {
-			let items = await fileDataSource.search(query: query)
-			return items as! [Item]
-		}
 		
-		return []
+	) -> SpotlightViewModel<SpotlightFileItem> {
+		
+		let dataSource = FileSystemDataSource(
+			directory: directory,
+			fileExtensions: fileExtensions
+		)
+		
+		let home = SpotlightSection<SpotlightFileItem>(
+			id	    : configuration.title.lowercased(),
+			title   : configuration.title,
+			icon    : configuration.icon,
+			view	: { EmptyView() },
+			onSelect: configuration.onSelect
+		)
+		
+		return SpotlightViewModel(
+			dataSource	 : dataSource,
+			sections	 : [home] + sections,
+			configuration: configuration
+		)
 	}
 }

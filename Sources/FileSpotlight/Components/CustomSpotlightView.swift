@@ -1,26 +1,29 @@
 //
-//  FileSearchView.swift
-//  NeonC
+//  CustomSpotlightView.swift
+//  FileSpotlight
 //
-//  Created by Eliomar Alejandro Rodriguez Ferrer on 24/08/25.
+//  Created by Eliomar Alejandro Rodriguez Ferrer on 29/10/25.
 //
 
 import SwiftUI
 
-/// Vista principale dello Spotlight generica con Glass Effect
-public struct SpotlightView<Item: SpotlightItem>: View {
+// MARK: - Custom Row View Spotlight
+public struct CustomSpotlightView<Item: SpotlightItem, RowView: SpotlightRowViewProtocol>: View where RowView.Item == Item {
 	
 	@ObservedObject private var viewModel: SpotlightViewModel<Item>
 	
 	private let width: CGFloat
+	private let rowViewType: RowView.Type
 	private var shape: AnyShape = AnyShape(RoundedRectangle(cornerRadius: 36))
 	
 	public init(
 		viewModel: SpotlightViewModel<Item>,
-		width: CGFloat = 600
+		width: CGFloat = 600,
+		rowView: RowView.Type
 	) {
 		self.viewModel = viewModel
 		self.width = width
+		self.rowViewType = rowView
 	}
 	
 	public var body: some View {
@@ -50,7 +53,6 @@ public struct SpotlightView<Item: SpotlightItem>: View {
 		return view
 	}
 	
-	// MARK: - Search Bar
 	private var searchBar: some View {
 		let item  = viewModel.sections[viewModel.selectedSection]
 		let icon  = item.icon ?? "gearshape"
@@ -71,15 +73,18 @@ public struct SpotlightView<Item: SpotlightItem>: View {
 				viewModel.selectCurrent()
 			}
 			
-			Button(action: { viewModel.reset() }) {
-				Image(systemName: "xmark.circle.fill")
-					.foregroundColor(.secondary)
+			if viewModel.isLoading {
+				ProgressView()
+					.scaleEffect(0.7)
+			} else if !viewModel.searchText.isEmpty {
+				Button(action: { viewModel.reset() }) {
+					Image(systemName: "xmark.circle.fill")
+						.foregroundColor(.secondary)
+				}
+				.buttonStyle(.plain)
 			}
-			.buttonStyle(.plain)
 		}
 	}
-	
-	// MARK: - Results View
 	
 	private var resultsView: some View {
 		ScrollViewReader { proxy in
@@ -89,7 +94,7 @@ public struct SpotlightView<Item: SpotlightItem>: View {
 						let item = viewModel.searchResults[index]
 						let isSelected = index == viewModel.selectedIndex
 						
-						DefaultSpotlightRowView(
+						rowViewType.init(
 							item: item,
 							isSelected: isSelected,
 							style: viewModel.rowStyle,

@@ -13,7 +13,6 @@ public struct SpotlightConfiguration: Sendable {
 	public var icon			   : String
 	public var debounceInterval: Int
 	public var maxHeight: CGFloat
-	public var cornerRadius: CGFloat
 	public var showDividers: Bool
 	public var animationDuration: Double
 	public var animationResponse: Double
@@ -25,7 +24,6 @@ public struct SpotlightConfiguration: Sendable {
 		icon			: String = "doc.text",
 		debounceInterval: Int = 150,
 		maxHeight: CGFloat = 300,
-		cornerRadius: CGFloat = 36,
 		showDividers: Bool = true,
 		animationDuration: Double = 0.15,
 		animationResponse: Double = 0.6,
@@ -37,7 +35,6 @@ public struct SpotlightConfiguration: Sendable {
 		self.icon			  = icon
 		self.debounceInterval = debounceInterval
 		self.maxHeight = maxHeight
-		self.cornerRadius = cornerRadius
 		self.showDividers = showDividers
 		self.animationDuration = animationDuration
 		self.animationResponse = animationResponse
