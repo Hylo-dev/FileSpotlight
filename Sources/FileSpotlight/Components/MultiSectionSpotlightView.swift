@@ -51,7 +51,7 @@ public struct MultiSectionSpotlightView<Item: SpotlightItem>: View {
 		VStack(spacing: 0) {
 			// A custom container that applies a glass-like visual effect.
 			GlassEffectContainer {
-				HStack {
+				HStack(spacing: 15) {
 					// Dynamically calculate the width of the main text/results area.
 					// It shrinks to make space for the section icons when the view is idle and a section is selected.
 					let textAreaWidth = viewModel.selectedSection > 0 &&
@@ -170,6 +170,7 @@ public struct MultiSectionSpotlightView<Item: SpotlightItem>: View {
 			withAnimation(.spring(response: 0.6, dampingFraction: 0.8)) {
 				self.viewModel.selectedSection = index
 			}
+			
 		} label: {
 			Image(systemName: section.icon ?? "gearshape")
 				.font(self.sizeIconSection)
