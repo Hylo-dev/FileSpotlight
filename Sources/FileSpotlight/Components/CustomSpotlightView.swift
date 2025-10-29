@@ -68,7 +68,9 @@ public struct CustomSpotlightView<Item: SpotlightItem, RowView: SpotlightRowView
 		.glassEffect(.regular, in: shape) // Applies a custom glass-like visual effect.
 		.onKeyPress { keyPress in
 			// Forwards key press events to the view model for handling navigation (e.g., up/down arrows).
-			viewModel.handleKeyPress(keyPress)
+			Task { @MainActor in viewModel.handleKeyPress(keyPress) }
+			
+			return .handled
 		}
 	}
 	

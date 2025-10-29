@@ -65,7 +65,9 @@ public struct FileSearchSpotlightView<Item: SpotlightItem>: View {
 		.glassEffect(.regular, in: shape) // Apply a translucent "glass" background effect.
 		.onKeyPress { keyPress in
 			// Handle keyboard events (like arrow keys) by forwarding them to the view model.
-			viewModel.handleKeyPress(keyPress)
+			Task { @MainActor in viewModel.handleKeyPress(keyPress) }
+			
+			return .handled
 		}
 	}
 	

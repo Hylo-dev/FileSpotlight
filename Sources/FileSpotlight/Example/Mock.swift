@@ -62,6 +62,7 @@ import SwiftUI
 			
 			// 5. Instantiate the main spotlight view with its view model.
 			MultiSectionSpotlightView(viewModel: viewModelSpotlight, width: 650)
+				.sectionButtonSize(55)
 				.clipShape(.rect(cornerRadius: 20))
 			
 			Spacer()

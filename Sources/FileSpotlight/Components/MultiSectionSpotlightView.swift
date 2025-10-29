@@ -25,6 +25,14 @@ public struct MultiSectionSpotlightView<Item: SpotlightItem>: View {
 	/// The shape used for clipping and applying the glass effect to the main container.
 	/// It can be customized using the `clipShape` modifier.
 	private var shape: AnyShape = AnyShape(RoundedRectangle(cornerRadius: 36))
+	
+	/// The size use for icon button section.
+	/// It can be customized using the `sectionButtonIconSize` modifier.
+	private var sizeIconSection: Font = .title
+	
+	/// The size use for button section.
+	/// It can be customized using the `sectionButtonIconSize` modifier.
+	private var sizeButtonSection: CGFloat = 55
 
 	// MARK: - Initializer
 
@@ -48,7 +56,8 @@ public struct MultiSectionSpotlightView<Item: SpotlightItem>: View {
 					// It shrinks to make space for the section icons when the view is idle and a section is selected.
 					let textAreaWidth = viewModel.selectedSection > 0 &&
 										viewModel.state == .idle ?
-										width - 65 : width
+										width - sizeButtonSection * CGFloat(viewModel.sections.count) :
+										width
 
 					// Main content area containing the search bar and results.
 					VStack {
@@ -68,7 +77,9 @@ public struct MultiSectionSpotlightView<Item: SpotlightItem>: View {
 					.glassEffect(.regular, in: shape) // Apply glass effect to the main content area.
 					.onKeyPress { keyPress in
 						// Forward key press events to the view model for handling navigation (e.g., arrow keys).
-						viewModel.handleKeyPress(keyPress)
+						Task { @MainActor in viewModel.handleKeyPress(keyPress) }
+						
+						return .handled
 					}
 
 					// Conditionally show the section selection icons on the side.
@@ -93,6 +104,27 @@ public struct MultiSectionSpotlightView<Item: SpotlightItem>: View {
 	public func clipShape<S: Shape>(_ shape: S) -> Self {
 		var view = self
 		view.shape = AnyShape(shape)
+		
+		return view
+	}
+	
+	/// Customizes the size icon section of the spotlight section view
+	/// - Parameter font: A font conforming to SwiftUI's `Font`.
+	/// - Returns: A new version of the view with the updated shape.
+	public func sectionButtonIconSize(_ font: Font) -> Self {
+		var view = self
+		view.sizeIconSection = font
+		
+		return view
+	}
+	
+	/// Customizes the size button section of the spotlight section view
+	/// - Parameter size: A size CGFloat value.
+	/// - Returns: A new version of the view with the updated shape.
+	public func sectionButtonSize(_ size: CGFloat) -> Self {
+		var view = self
+		view.sizeButtonSection = size
+		
 		return view
 	}
 
@@ -142,8 +174,8 @@ public struct MultiSectionSpotlightView<Item: SpotlightItem>: View {
 			}
 		} label: {
 			Image(systemName: section.icon ?? "gearshape")
-				.font(.system(size: 19))
-				.frame(width: 55, height: 55)
+				.font(self.sizeIconSection)
+				.frame(width: sizeButtonSection, height: sizeButtonSection)
 				.contentShape(Circle()) // Ensures the entire circular area is tappable.
 		}
 		.buttonStyle(.plain)
