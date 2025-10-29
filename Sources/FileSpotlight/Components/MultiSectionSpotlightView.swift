@@ -33,6 +33,9 @@ public struct MultiSectionSpotlightView<Item: SpotlightItem>: View {
 	/// The size use for button section.
 	/// It can be customized using the `sectionButtonIconSize` modifier.
 	private var sizeButtonSection: CGFloat = 55
+	
+	/// Use for set focused text field
+	private var focusBinding: FocusState<Bool>.Binding?
 
 	// MARK: - Initializer
 
@@ -126,6 +129,14 @@ public struct MultiSectionSpotlightView<Item: SpotlightItem>: View {
 		
 		return view
 	}
+	
+	/// Get focusable state.
+	/// - Parameter focus: Focusable state
+	public func focused(_ binding: FocusState<Bool>.Binding) -> Self {
+		var view = self
+		view.focusBinding = binding
+		return view
+	}
 
 	// MARK: - Subviews
 
@@ -141,12 +152,24 @@ public struct MultiSectionSpotlightView<Item: SpotlightItem>: View {
 
 			// The placeholder text is the title of the current section.
 			let placeholder = item.title ?? "nil"
-			TextField(
-				placeholder,
-				text: $viewModel.searchText
-			)
-			.textFieldStyle(.plain)
-			.font(.title2)
+			if let focus = focusBinding {
+				TextField(
+					placeholder,
+					text: $viewModel.searchText
+				)
+				.textFieldStyle(.plain)
+				.font(.title2)
+				.focused(focus)
+				
+			} else {
+				TextField(
+					placeholder,
+					text: $viewModel.searchText
+				)
+				.textFieldStyle(.plain)
+				.font(.title2)
+				
+			}
 		}
 	}
 
