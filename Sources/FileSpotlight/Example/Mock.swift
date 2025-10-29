@@ -14,7 +14,7 @@ import SwiftUI
 
 #Preview("Multi-Section Spotlight") {
 	// 1. Initialize the ViewModel for the multi-section spotlight.
-	let viewModelSpotlight = MultiSectionSpotlightViewModel<SpotlightFileItem>(
+	@Previewable @StateObject var viewModelSpotlight = MultiSectionSpotlightViewModel<SpotlightFileItem>(
 		
 		// 2. Set up the primary data source to search for PDF files in the user's Downloads directory.
 		dataSource: FileSystemDataSource(
@@ -62,8 +62,8 @@ import SwiftUI
 			
 			// 5. Instantiate the main spotlight view with its view model.
 			MultiSectionSpotlightView(viewModel: viewModelSpotlight, width: 650)
-				.sectionButtonSize(55)
-				.clipShape(.rect(cornerRadius: 20))
+//				.sectionButtonSize(55)
+//				.clipShape(.rect(cornerRadius: 20))
 			
 			Spacer()
 		}

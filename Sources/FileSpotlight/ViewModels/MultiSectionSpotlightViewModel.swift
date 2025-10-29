@@ -209,15 +209,23 @@ public class MultiSectionSpotlightViewModel<Item: SpotlightItem>: ObservableObje
 		case .return:
 			if selectedSection == 0 || state == .focusSection {
 				selectCurrent()
+				
 			} else {
-				withAnimation(.spring(response: 0.6, dampingFraction: 0.8)) {
-					state = .focusSection
+				Task { @MainActor in
+					withAnimation(.spring(response: 0.6, dampingFraction: 0.8)) {
+						state = .focusSection
+					}
 				}
 			}
 			return .handled
 
 		case .escape:
-			withAnimation(.spring(response: 0.6, dampingFraction: 0.8)) { reset() }
+				Task { @MainActor in
+					withAnimation(.spring(response: 0.6, dampingFraction: 0.8)) {
+						reset()
+					}
+				}
+				
 			return .handled
 
 		default:

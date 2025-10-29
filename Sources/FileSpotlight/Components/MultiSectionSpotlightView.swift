@@ -77,9 +77,7 @@ public struct MultiSectionSpotlightView<Item: SpotlightItem>: View {
 					.glassEffect(.regular, in: shape) // Apply glass effect to the main content area.
 					.onKeyPress { keyPress in
 						// Forward key press events to the view model for handling navigation (e.g., arrow keys).
-						Task { @MainActor in viewModel.handleKeyPress(keyPress) }
-						
-						return .handled
+						viewModel.handleKeyPress(keyPress)						
 					}
 
 					// Conditionally show the section selection icons on the side.
