@@ -36,7 +36,7 @@ public struct SpotlightView<Item: SpotlightItem>: View {
 			}
 		}
 		.frame(width: width)
-		.glassEffect(.clear, in: .rect(cornerRadius: viewModel.configuration.cornerRadius))
+		.glassEffect(.regular, in: .rect(cornerRadius: viewModel.configuration.cornerRadius))
 		.onKeyPress { keyPress in
 			viewModel.handleKeyPress(keyPress)
 		}
@@ -155,7 +155,7 @@ public struct CustomSpotlightView<Item: SpotlightItem, RowView: SpotlightRowView
 			}
 		}
 		.frame(width: width)
-		.glassEffect(.clear, in: .rect(cornerRadius: viewModel.configuration.cornerRadius))
+		.glassEffect(.regular, in: .rect(cornerRadius: viewModel.configuration.cornerRadius))
 		.onKeyPress { keyPress in
 			viewModel.handleKeyPress(keyPress)
 		}
@@ -299,7 +299,7 @@ public struct MultiSectionSpotlightView<Item: SpotlightItem>: View {
 						}
 					}
 					.frame(width: textAreaWidth)
-					.glassEffect(.clear, in: .rect(cornerRadius: viewModel.configuration.cornerRadius))
+					.glassEffect(.regular, in: .rect(cornerRadius: viewModel.configuration.cornerRadius))
 					.onKeyPress { keyPress in
 						viewModel.handleKeyPress(keyPress)
 					}
@@ -369,35 +369,6 @@ public struct MultiSectionSpotlightView<Item: SpotlightItem>: View {
 		)
 		.clipShape(Circle())
 		.transition(.move(edge: .leading).combined(with: .opacity))
-		
-//		VStack(alignment: .leading, spacing: 8) {
-//			if let title = section.title {
-//				HStack(spacing: 8) {
-//					if let icon = section.icon {
-//						Image(systemName: icon)
-//							.foregroundColor(.secondary)
-//					}
-//					
-//					Text(title)
-//						.font(.headline)
-//						.foregroundColor(.secondary)
-//				}
-//				.padding(.horizontal, 4)
-//			}
-//			
-//			ForEach(section.items()) { item in
-//				DefaultSpotlightRowView(
-//					item: item,
-//					isSelected: false,
-//					style: viewModel.rowStyle,
-//					onTap: {
-//						Task { @MainActor in
-//							section.onSelect(item)
-//						}
-//					}
-//				)
-//			}
-//		}
 	}
 	
 	private var resultsView: some View {
