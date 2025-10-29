@@ -131,8 +131,8 @@ public struct MultiSectionSpotlightView<Item: SpotlightItem>: View {
 	}
 	
 	/// Get focusable state.
-	/// - Parameter focus: Focusable state
-	public func focused(_ binding: FocusState<Bool>.Binding) -> Self {
+	/// - Parameter binding: Focusable state
+	public func focusedSpotlight(_ binding: FocusState<Bool>.Binding) -> Self {
 		var view = self
 		view.focusBinding = binding
 		return view
