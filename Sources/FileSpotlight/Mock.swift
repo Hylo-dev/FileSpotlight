@@ -9,7 +9,7 @@ import SwiftUI
 // MARK: - Preview con Mock Data
 
 #Preview("Spotlight with Mock Data") {
-	@Previewable @StateObject var viewModel = SpotlightViewModel<SpotlightFileItem>.initFileSearch(
+	@Previewable @StateObject var viewModel = SpotlightViewModel.initFileSearch(
 		directory: URL(fileURLWithPath: "/Users/eliorodr2104/Downloads"),
 		fileExtensions: ["pdf"],
 		configuration: .init(

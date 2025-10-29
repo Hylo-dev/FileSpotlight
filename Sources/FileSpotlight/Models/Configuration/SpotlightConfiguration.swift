@@ -31,15 +31,15 @@ public struct SpotlightConfiguration: Sendable {
 		onSelect		: @escaping @MainActor (SpotlightFileItem) -> Void = { _ in }
 	) {
 		
-		self.title			  = title
-		self.icon			  = icon
-		self.debounceInterval = debounceInterval
-		self.maxHeight = maxHeight
-		self.showDividers = showDividers
+		self.title			   = title
+		self.icon			   = icon
+		self.debounceInterval  = debounceInterval
+		self.maxHeight         = maxHeight
+		self.showDividers      = showDividers
 		self.animationDuration = animationDuration
 		self.animationResponse = animationResponse
-		self.animationDamping = animationDamping
-		self.onSelect 		  = onSelect
+		self.animationDamping  = animationDamping
+		self.onSelect 		   = onSelect
 	}
 	
 	public static let `default` = SpotlightConfiguration()
