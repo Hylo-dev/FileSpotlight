@@ -59,7 +59,7 @@ public class SpotlightViewModel<Item: SpotlightItem>: ObservableObject {
 			id	    : self.configuration.title.lowercased(),
 			title   : self.configuration.title,
 			icon    : self.configuration.icon,
-			items	: { [] },
+			view	: { EmptyView() },
 			onSelect: self.configuration.onSelect
 		)
 		
@@ -275,7 +275,7 @@ extension SpotlightViewModel where Item == SpotlightFileItem {
 			id	    : configuration.title.lowercased(),
 			title   : configuration.title,
 			icon    : configuration.icon,
-			items	: { [] },
+			view	: { EmptyView() },
 			onSelect: configuration.onSelect
 		)
 		

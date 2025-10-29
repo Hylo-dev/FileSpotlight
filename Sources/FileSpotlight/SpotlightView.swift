@@ -343,19 +343,13 @@ public struct MultiSectionSpotlightView<Item: SpotlightItem>: View {
 		ForEach(viewModel.visibleSections().enumerated(), id: \.element.id) { index, section in
 			if index != 0 { sectionView(section, index) }
 		}
-		
-//		ScrollView {
-//			LazyVStack(alignment: .leading, spacing: 16) {
-//				
-//			}
-//			.padding()
-//		}
-//		.frame(maxHeight: viewModel.configuration.maxHeight)
 	}
 	
 	private func sectionView(_ section: SpotlightSection<Item>, _ index: Int) -> some View {
 		return Button {
-			
+			withAnimation(.spring(response: 0.6, dampingFraction: 0.8)) {
+				self.viewModel.selectedSection = index
+			}
 			
 		} label: {
 			Image(systemName: section.icon ?? "gearshape")
@@ -407,26 +401,35 @@ public struct MultiSectionSpotlightView<Item: SpotlightItem>: View {
 	}
 	
 	private var resultsView: some View {
-		ScrollViewReader { proxy in
+		let index = self.viewModel.selectedSection
+		
+		return ScrollViewReader { proxy in
 			ScrollView {
-				LazyVStack(spacing: 8) {
-					ForEach(viewModel.searchResults.indices, id: \.self) { index in
-						let item = viewModel.searchResults[index]
-						let isSelected = index == viewModel.selectedIndex
-						
-						DefaultSpotlightRowView(
-							item: item,
-							isSelected: isSelected,
-							style: viewModel.rowStyle,
-							onTap: {
-								viewModel.selectedIndex = index
-								viewModel.selectCurrent()
+				switch index {
+					case 0:
+						LazyVStack(spacing: 8) {
+							ForEach(viewModel.searchResults.indices, id: \.self) { index in
+								let item = viewModel.searchResults[index]
+								let isSelected = index == viewModel.selectedIndex
+								
+								DefaultSpotlightRowView(
+									item: item,
+									isSelected: isSelected,
+									style: viewModel.rowStyle,
+									onTap: {
+										viewModel.selectedIndex = index
+										viewModel.selectCurrent()
+									}
+								)
+								.id(index)
 							}
-						)
-						.id(index)
-					}
+						}
+						.padding()
+				
+					default:
+						self.viewModel.sections[index].buildView()
 				}
-				.padding()
+				
 			}
 			.frame(maxHeight: viewModel.configuration.maxHeight)
 			.onChange(of: viewModel.selectedIndex) { _, newIndex in

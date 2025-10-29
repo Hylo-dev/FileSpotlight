@@ -7,21 +7,25 @@
 
 import SwiftUI
 
-/// Sezione personalizzabile dello spotlight
+import SwiftUI
+
+/// Sezione personalizzabile dello spotlight con supporto per custom view
 public struct SpotlightSection<Item: SpotlightItem> {
-	public let id			   : String
-	public let title		   : String?
-	public let icon 		   : String?
-	public let items		   : @Sendable () -> [Item]
-	public let onSelect		   : @Sendable @MainActor (Item) -> Void
+	public let id: String
+	public let title: String?
+	public let icon: String?
+	public let onSelect: @Sendable @MainActor (Item) -> Void
 	public let keyboardShortcut: KeyEquivalent?
-	public let isVisible	   : @Sendable () -> Bool
+	public let isVisible: @Sendable () -> Bool
+	public let view: (() -> AnyView)?
 	
-	public init(
+	
+	// Inizializzatore per sezioni con custom view
+	public init<Content: View>(
 		id: String,
 		title: String? = nil,
 		icon: String? = nil,
-		items: @escaping @Sendable () -> [Item],
+		@ViewBuilder view: @escaping () -> Content,
 		onSelect: @escaping @Sendable @MainActor (Item) -> Void,
 		keyboardShortcut: KeyEquivalent? = nil,
 		isVisible: @escaping @Sendable () -> Bool = { true }
@@ -29,9 +33,19 @@ public struct SpotlightSection<Item: SpotlightItem> {
 		self.id = id
 		self.title = title
 		self.icon = icon
-		self.items = items
+		self.view = { AnyView(view()) }
 		self.onSelect = onSelect
 		self.keyboardShortcut = keyboardShortcut
 		self.isVisible = isVisible
+	}
+	
+	@ViewBuilder
+	public func buildView() -> some View {
+		if let builder = view {
+			builder()
+			
+		} else {
+			EmptyView()
+		}
 	}
 }

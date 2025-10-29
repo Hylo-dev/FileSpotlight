@@ -106,20 +106,7 @@ private func shortcutRow(icon: String, text: String) -> some View {
 				id: "recent",
 				title: "Recent Files",
 				icon: "clock",
-				items: {
-					[
-						SpotlightFileItem(
-							name: "MainView.swift",
-							subtitle: "Opened 2 minutes ago",
-							icon: .systemImage("doc.text.fill")
-						),
-						SpotlightFileItem(
-							name: "Settings.swift",
-							subtitle: "Opened 1 hour ago",
-							icon: .systemImage("gearshape")
-						)
-					]
-				},
+				view	: { Text("Test 0") },
 				onSelect: { file in
 					print("Selected recent: \(file.displayName)")
 				}
@@ -132,25 +119,7 @@ private func shortcutRow(icon: String, text: String) -> some View {
 				id: "favorites",
 				title: "Favorites",
 				icon: "star.fill",
-				items: {
-					[
-						SpotlightFileItem(
-							name: "AppCore.swift",
-							subtitle: "Core functionality",
-							icon: .systemImage("star.fill")
-						),
-						SpotlightFileItem(
-							name: "Utils.swift",
-							subtitle: "Utility functions",
-							icon: .systemImage("star.fill")
-						),
-						SpotlightFileItem(
-							name: "Constants.swift",
-							subtitle: "App constants",
-							icon: .systemImage("star.fill")
-						)
-					]
-				},
+				view	: { Text("Test 1") },
 				onSelect: { file in
 					print("Selected favorite: \(file.displayName)")
 				}
