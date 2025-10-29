@@ -187,49 +187,55 @@ public class MultiSectionSpotlightViewModel<Item: SpotlightItem>: ObservableObje
 	public func handleKeyPress(_ keyPress: KeyPress) -> KeyPress.Result {
 		switch keyPress.key {
 		case .downArrow:
-			navigateDown()
-			return .handled
+				navigateDown()
+				return .handled
 
 		case .upArrow:
-			navigateUp()
-			return .handled
+				navigateUp()
+				return .handled
 
 		case .leftArrow:
-				withAnimation(.interpolatingSpring(stiffness: 180, damping: 14)) {
-				navigateLeft()
-			}
-			return .handled
+				Task { @MainActor in
+					withAnimation(.interpolatingSpring(stiffness: 180, damping: 14)) {
+						navigateLeft()
+					}
+				}
+				
+				return .handled
 
 		case .rightArrow:
-			withAnimation(.interpolatingSpring(stiffness: 180, damping: 14)) {
-				navigateRight()
-			}
-			return .handled
+				Task { @MainActor in
+					withAnimation(.interpolatingSpring(stiffness: 180, damping: 14)) {
+						navigateRight()
+					}
+				}
+				
+				return .handled
 
 		case .return:
-			if selectedSection == 0 || state == .focusSection {
-				selectCurrent()
-				
-			} else {
-				Task { @MainActor in
-					withAnimation(.spring(response: 0.6, dampingFraction: 0.8)) {
-						state = .focusSection
+				if selectedSection == 0 || state == .focusSection {
+					selectCurrent()
+					
+				} else {
+					Task { @MainActor in
+						withAnimation(.spring(response: 0.6, dampingFraction: 0.8)) {
+							state = .focusSection
+						}
 					}
 				}
-			}
-			return .handled
+				return .handled
 
 		case .escape:
-				Task { @MainActor in
-					withAnimation(.spring(response: 0.6, dampingFraction: 0.8)) {
-						reset()
+					Task { @MainActor in
+						withAnimation(.spring(response: 0.6, dampingFraction: 0.8)) {
+							reset()
+						}
 					}
-				}
-				
-			return .handled
+					
+				return .handled
 
 		default:
-			return .ignored
+				return .ignored
 		}
 	}
 
