@@ -97,9 +97,8 @@ public struct MultiSectionSpotlightView<Item: SpotlightItem>: View {
 						// Conditionally show the results view and an optional divider.
 						// Results are shown when the user is searching or has focused on a section.
 						if viewModel.state == .showingResults || viewModel.state == .focusSection {
-							if viewModel.configuration.showDividers {
-								Divider()
-							}
+							if viewModel.configuration.showDividers { Divider() }
+							
 							resultsView
 						}
 					}
@@ -335,6 +334,7 @@ public struct MultiSectionSpotlightView<Item: SpotlightItem>: View {
 		// `ScrollViewReader` allows programmatically scrolling to a specific view inside the `ScrollView`.
 		return ScrollViewReader { proxy in
 			ScrollView {
+				
 				// Switch on the selected section index to determine what content to show.
 				switch index {
 				case 0:
@@ -364,9 +364,10 @@ public struct MultiSectionSpotlightView<Item: SpotlightItem>: View {
 					// For all other sections, delegate view construction to the section itself.
 					// This allows for custom, non-list views in different sections.
 					self.viewModel.sections[index].buildView()
+						
 				}
 			}
-			.frame(maxHeight: viewModel.configuration.maxHeight) // Constrain the scrollable area's height.
+			//.frame(maxHeight: viewModel.configuration.maxHeight) // Constrain the scrollable area's height.
 			.onChange(of: viewModel.selectedIndex) { _, newIndex in
 				// When the selected index changes (e.g., via arrow keys), scroll the list
 				// to make the newly selected item visible.
@@ -374,6 +375,7 @@ public struct MultiSectionSpotlightView<Item: SpotlightItem>: View {
 					proxy.scrollTo(newIndex, anchor: .center)
 				}
 			}
+			
 		}
 		.transition(
 			// Define a custom animation for when the results view appears and disappears.
