@@ -102,6 +102,7 @@ public struct MultiSectionSpotlightView<Item: SpotlightItem>: View {
 							resultsView
 						}
 					}
+					.fixedSize(horizontal: false, vertical: true)
 					.frame(width: textAreaWidth)
 					.glassEffect(.regular, in: shape) // Apply glass effect to the main content area.
 					.animation(.spring(response: 0.5, dampingFraction: 0.7), value: textAreaWidth)
@@ -367,7 +368,7 @@ public struct MultiSectionSpotlightView<Item: SpotlightItem>: View {
 						
 				}
 			}
-			//.frame(maxHeight: viewModel.configuration.maxHeight) // Constrain the scrollable area's height.
+			.frame(maxHeight: viewModel.configuration.maxHeight) // Constrain the scrollable area's height.
 			.onChange(of: viewModel.selectedIndex) { _, newIndex in
 				// When the selected index changes (e.g., via arrow keys), scroll the list
 				// to make the newly selected item visible.
@@ -375,7 +376,6 @@ public struct MultiSectionSpotlightView<Item: SpotlightItem>: View {
 					proxy.scrollTo(newIndex, anchor: .center)
 				}
 			}
-			
 		}
 		.transition(
 			// Define a custom animation for when the results view appears and disappears.
