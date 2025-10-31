@@ -34,7 +34,7 @@ public struct MultiSectionSpotlightView<Item: SpotlightItem>: View {
 	/// It can be customized using the `sectionButtonIconSize` modifier.
 	private var sizeButtonSection: CGFloat = 55
 	
-	/// Use for set focused text field
+	/// Use for set focused text field when this appear
 	private var focusBinding: FocusState<Bool>.Binding?
 
 	// MARK: - Initializer
@@ -207,7 +207,7 @@ public struct MultiSectionSpotlightView<Item: SpotlightItem>: View {
 	private func sectionView(_ section: SpotlightSection<Item>, _ index: Int) -> some View {
 		let isSelected = viewModel.selectedSection == index
 		
-		return Button {
+		return Button {			
 			// When tapped, animate the selection of the new section.
 			withAnimation(.spring(response: 0.6, dampingFraction: 0.8)) {
 				self.viewModel.selectedSection = index
@@ -226,6 +226,8 @@ public struct MultiSectionSpotlightView<Item: SpotlightItem>: View {
 			in: .circle
 		)
 		.clipShape(Circle())
+		.keyboardShortcut(KeyEquivalent(Character("\(index)")), modifiers: [.command])
+		
 	}
 
 	/// The view that displays the content for the currently selected section.

@@ -30,6 +30,9 @@ public struct CustomSpotlightView<Item: SpotlightItem, RowView: SpotlightRowView
 	/// Defaults to a rounded rectangle but can be customized.
 	private var shape: AnyShape = AnyShape(RoundedRectangle(cornerRadius: 36))
 	
+	/// Use for set focused text field when this appear
+	private var focusBinding: FocusState<Bool>.Binding?
+	
 	// MARK: - Initializer
 	
 	/// Creates a custom spotlight view.
@@ -83,6 +86,14 @@ public struct CustomSpotlightView<Item: SpotlightItem, RowView: SpotlightRowView
 		return view
 	}
 	
+	/// Get focusable state.
+	/// - Parameter binding: Focusable state
+	public func focused(_ binding: FocusState<Bool>.Binding) -> Self {
+		var view = self
+		view.focusBinding = binding
+		return view
+	}
+	
 	// MARK: - Subviews
 	
 	/// A view component for the search bar, including an icon, text field, and status indicators.
@@ -97,29 +108,38 @@ public struct CustomSpotlightView<Item: SpotlightItem, RowView: SpotlightRowView
 				.foregroundColor(.secondary)
 				.font(.title2)
 			
-			TextField(
-				title,
-				text: $viewModel.searchText
-			)
-			.textFieldStyle(.plain)
-			.font(.title2)
-			.onSubmit {
-				// Executes the action for the currently selected item when the user presses Enter.
-				viewModel.selectCurrent()
-			}
-			
-			// Show a progress indicator while a search is in progress.
-			if viewModel.isLoading {
-				ProgressView()
-					.scaleEffect(0.7)
-			// Show a clear button if the search field is not empty and not loading.
-			} else if !viewModel.searchText.isEmpty {
-				Button(action: { viewModel.reset() }) {
-					Image(systemName: "xmark.circle.fill")
-						.foregroundColor(.secondary)
+			if let focus = focusBinding {
+				TextField(
+					title,
+					text: $viewModel.searchText
+				)
+				.textFieldStyle(.plain)
+				.font(.title2)
+				.onSubmit {
+					// Executes the action for the currently selected item when the user presses Enter.
+					viewModel.selectCurrent()
 				}
-				.buttonStyle(.plain)
+				.focused(focus)
+				
+			} else {
+				TextField(
+					title,
+					text: $viewModel.searchText
+				)
+				.textFieldStyle(.plain)
+				.font(.title2)
+				.onSubmit {
+					// Executes the action for the currently selected item when the user presses Enter.
+					viewModel.selectCurrent()
+				}
 			}
+						
+			// Show a clear button if the search field is not empty and not loading.
+			Button(action: { viewModel.reset() }) {
+				Image(systemName: "xmark.circle.fill")
+					.foregroundColor(.secondary)
+			}
+			.buttonStyle(.plain)
 		}
 	}
 	
