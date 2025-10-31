@@ -207,7 +207,9 @@ public struct MultiSectionSpotlightView<Item: SpotlightItem>: View {
 	private func sectionView(_ section: SpotlightSection<Item>, _ index: Int) -> some View {
 		let isSelected = viewModel.selectedSection == index
 		
-		return Button {			
+		return Button {
+			print("TEST PRESS COMMAND: \(index)")
+			
 			// When tapped, animate the selection of the new section.
 			withAnimation(.spring(response: 0.6, dampingFraction: 0.8)) {
 				self.viewModel.selectedSection = index
