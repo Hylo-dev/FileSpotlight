@@ -66,6 +66,16 @@ public struct MultiSectionSpotlightView<Item: SpotlightItem>: View {
 					VStack {
 						searchBar
 							.padding()
+							.background {
+								ForEach(1 ..< viewModel.sections.count, id:\.self) { index in
+									Button("") {
+										withAnimation(.spring(response: 0.6, dampingFraction: 0.8)) {
+											viewModel.selectedSection = index
+										}
+									}
+									.keyboardShortcut(KeyEquivalent(Character("\(index)")), modifiers: [.command])
+								}
+							}
 
 						// Conditionally show the results view and an optional divider.
 						// Results are shown when the user is searching or has focused on a section.
@@ -208,8 +218,6 @@ public struct MultiSectionSpotlightView<Item: SpotlightItem>: View {
 		let isSelected = viewModel.selectedSection == index
 		
 		return Button {
-			print("TEST PRESS COMMAND: \(index)")
-			
 			// When tapped, animate the selection of the new section.
 			withAnimation(.spring(response: 0.6, dampingFraction: 0.8)) {
 				self.viewModel.selectedSection = index
@@ -228,8 +236,6 @@ public struct MultiSectionSpotlightView<Item: SpotlightItem>: View {
 			in: .circle
 		)
 		.clipShape(Circle())
-		.keyboardShortcut(KeyEquivalent(Character("\(index)")), modifiers: [.command])
-		
 	}
 
 	/// The view that displays the content for the currently selected section.
