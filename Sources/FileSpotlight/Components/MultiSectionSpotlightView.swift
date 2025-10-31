@@ -70,9 +70,11 @@ public struct MultiSectionSpotlightView<Item: SpotlightItem>: View {
 								ForEach(1 ..< viewModel.sections.count, id:\.self) { index in
 									Button("") {
 										withAnimation(.spring(response: 0.6, dampingFraction: 0.8)) {
-											viewModel.selectedSection = index
+											self.viewModel.state 		   = .focusSection
+											self.viewModel.selectedSection = index
 										}
 									}
+									.buttonStyle(.plain)
 									.keyboardShortcut(KeyEquivalent(Character("\(index)")), modifiers: [.command])
 								}
 							}
@@ -220,6 +222,7 @@ public struct MultiSectionSpotlightView<Item: SpotlightItem>: View {
 		return Button {
 			// When tapped, animate the selection of the new section.
 			withAnimation(.spring(response: 0.6, dampingFraction: 0.8)) {
+				self.viewModel.state 		   = .focusSection
 				self.viewModel.selectedSection = index
 			}
 			
