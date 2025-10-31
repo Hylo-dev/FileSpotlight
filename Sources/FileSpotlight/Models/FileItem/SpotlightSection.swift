@@ -29,9 +29,6 @@ public struct SpotlightSection<Item: SpotlightItem> {
 	/// It is `Sendable` and runs on the main actor to ensure thread safety and proper UI updates.
 	public let onSelect: @Sendable @MainActor (Item) -> Void
 	
-	/// An optional keyboard shortcut that can be used to quickly switch to this section.
-	public let keyboardShortcut: KeyEquivalent?
-	
 	/// A closure that returns a boolean indicating whether the section should be visible.
 	/// This allows for dynamically showing or hiding sections based on application state.
 	public let isVisible: @Sendable () -> Bool
@@ -39,6 +36,8 @@ public struct SpotlightSection<Item: SpotlightItem> {
 	/// An optional closure that returns a type-erased view (`AnyView`) for the section's content.
 	public let view: (() -> AnyView)?
 	
+	/// Keyboard shortcut, this variable assign a section the command.
+	public let keyboardShortcut: CommandSection?
 	
 	// MARK: - Initializer
 	
@@ -60,7 +59,7 @@ public struct SpotlightSection<Item: SpotlightItem> {
 		icon			 : String? = nil,
 		@ViewBuilder view: @escaping () -> Content,
 		onSelect		 : @escaping @Sendable @MainActor (Item) -> Void,
-		keyboardShortcut : KeyEquivalent? = nil,
+		keyboardShortcut : CommandSection? = nil,
 		isVisible		 : @escaping @Sendable () -> Bool = { true }
 	) {
 		self.id    = id

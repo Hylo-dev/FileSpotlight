@@ -67,15 +67,30 @@ public struct MultiSectionSpotlightView<Item: SpotlightItem>: View {
 						searchBar
 							.padding()
 							.background {
-								ForEach(1 ..< viewModel.sections.count, id:\.self) { index in
-									Button("") {
-										withAnimation(.spring(response: 0.6, dampingFraction: 0.8)) {
-											self.viewModel.state 		   = .focusSection
-											self.viewModel.selectedSection = index
+								ForEach(1 ..< self.viewModel.sections.count, id:\.self) { index in
+									let shortcut = self.viewModel.sections[index].keyboardShortcut
+									
+									if shortcut != nil {
+										Button("") {
+											withAnimation(.spring(response: 0.6, dampingFraction: 0.8)) {
+												self.viewModel.state 		   = .focusSection
+												self.viewModel.selectedSection = index
+											}
 										}
+										.buttonStyle(.plain)
+										.keyboardShortcut(shortcut!.keyCommand, modifiers: shortcut!.modifiers)
+										
+									} else {
+										Button("") {
+											withAnimation(.spring(response: 0.6, dampingFraction: 0.8)) {
+												self.viewModel.state 		   = .focusSection
+												self.viewModel.selectedSection = index
+											}
+										}
+										.buttonStyle(.plain)
+										.keyboardShortcut(KeyEquivalent(Character("\(index)")), modifiers: [.command])
+										
 									}
-									.buttonStyle(.plain)
-									.keyboardShortcut(KeyEquivalent(Character("\(index)")), modifiers: [.command])
 								}
 							}
 
@@ -182,6 +197,13 @@ public struct MultiSectionSpotlightView<Item: SpotlightItem>: View {
 				.font(.title2)
 				
 			}
+			
+			Spacer()
+			
+			if self.viewModel.selectedSection != 0 && self.viewModel.state != .focusSection {
+				commandIcon
+					.transition(.opacity.animation(.easeOut(duration: 0.1)))
+			}
 		}
 	}
 
@@ -239,6 +261,70 @@ public struct MultiSectionSpotlightView<Item: SpotlightItem>: View {
 			in: .circle
 		)
 		.clipShape(Circle())
+	}
+	
+	private var commandIcon: some View {
+		let index      = self.viewModel.selectedSection
+		let shortcut   = self.viewModel.sections[index].keyboardShortcut
+		let isNil      = shortcut == nil
+
+		let key        = isNil ?
+							String(index) :
+							String(shortcut!.keyCommand.character)
+
+		let modifiers  = isNil ?
+							EventModifiers.command :
+							shortcut!.modifiers
+
+		return HStack(spacing: 4) {
+			
+			if modifiers.contains(.control) {
+				Image(systemName: "control")
+					.frame(width: 15, height: 15)
+					.padding(5)
+					.background(.thinMaterial)
+					.cornerRadius(7)
+				
+			}
+			
+			if modifiers.contains(.option) {
+				Image(systemName: "option")
+					.frame(width: 15, height: 15)
+					.padding(5)
+					.background(.thinMaterial)
+					.cornerRadius(7)
+				
+			}
+			
+			if modifiers.contains(.shift) {
+				Image(systemName: "shift")
+					.frame(width: 15, height: 15)
+					.padding(5)
+					.background(.thinMaterial)
+					.cornerRadius(7)
+				
+			}
+			
+			if modifiers.contains(.command) {
+				Image(systemName: "command")
+					.frame(width: 15, height: 15)
+					.padding(5)
+					.background(.thinMaterial)
+					.cornerRadius(7)
+				
+			}
+			
+			Text(key)
+				.frame(width: 15, height: 15)
+				.padding(5)
+				.background(.thinMaterial)
+				.cornerRadius(7)
+				.id(key)
+			
+		}
+		.font(.headline)
+		.foregroundColor(.secondary)
+		
 	}
 
 	/// The view that displays the content for the currently selected section.
