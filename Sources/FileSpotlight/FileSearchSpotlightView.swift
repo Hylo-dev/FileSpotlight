@@ -58,8 +58,8 @@ public struct FileSearchSpotlightView<Item: SpotlightItem>: View {
 				// The main search bar input area.
 				SearchBarView(
 					title	  : section.title ?? "nil",
-					icon	  : section.icon ?? "gearshape",
-					focusState: focusBinding,
+					icon	  : section.icon  ?? "gearshape",
+					focusState: self.focusBinding,
 					searchText: self.$viewModel.searchText
 				)
 			}
@@ -99,6 +99,14 @@ public struct FileSearchSpotlightView<Item: SpotlightItem>: View {
 	public func clipShape<S: Shape>(_ shape: S) -> Self {
 		var view = self
 		view.shape = AnyShape(shape)
+		return view
+	}
+	
+	/// Get focusable state.
+	/// - Parameter binding: Focusable state
+	public func focused(_ binding: FocusState<Bool>.Binding) -> Self {
+		var view = self
+		view.focusBinding = binding
 		return view
 	}
 }

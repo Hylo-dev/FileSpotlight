@@ -53,9 +53,22 @@ public struct CustomSpotlightView<Item: SpotlightItem, RowView: SpotlightRowView
 	// MARK: - Body
 	
 	public var body: some View {
+		let section = self.viewModel.getPrincipalSection()
+		
 		VStack(spacing: 0) {
-			searchBar
-				.padding()
+			HStack(
+				alignment: .firstTextBaseline,
+				spacing: 12
+			) {
+				// The main search bar input area.
+				SearchBarView(
+					title	  : section.title ?? "nil",
+					icon	  : section.icon  ?? "gearshape",
+					focusState: self.focusBinding,
+					searchText: self.$viewModel.searchText
+				)
+			}
+			.padding()
 			
 			// Only show the results section if the view model's state indicates that results should be visible.
 			if viewModel.state == .showingResults {
@@ -64,7 +77,15 @@ public struct CustomSpotlightView<Item: SpotlightItem, RowView: SpotlightRowView
 					Divider()
 				}
 				
-				resultsView
+				// The scrollable list of search results.
+				ResultsView<Item>(
+					listSelectedIndex: self.$viewModel.selectedIndex,
+					spotlightSection : self.viewModel.getPrincipalSection(),
+					searchResults	 : self.viewModel.searchResults,
+					rowStyle		 : self.viewModel.rowStyle,
+					maxHeight		 : self.viewModel.configuration.maxHeight,
+					selectCurrentRow : self.viewModel.selectCurrent
+				)
 			}
 		}
 		.frame(width: width)
@@ -92,109 +113,5 @@ public struct CustomSpotlightView<Item: SpotlightItem, RowView: SpotlightRowView
 		var view = self
 		view.focusBinding = binding
 		return view
-	}
-	
-	// MARK: - Subviews
-	
-	/// A view component for the search bar, including an icon, text field, and status indicators.
-	private var searchBar: some View {
-		// Fetches details for the search bar from the view model's principal section.
-		let item  = viewModel.getPrincipalSection()
-		let icon  = item.icon ?? "gearshape" // Default icon.
-		let title = item.title ?? "nil"     // Default placeholder text.
-		
-		return HStack(spacing: 12) {
-			Image(systemName: icon)
-				.foregroundColor(.secondary)
-				.font(.title2)
-			
-			if let focus = focusBinding {
-				TextField(
-					title,
-					text: $viewModel.searchText
-				)
-				.textFieldStyle(.plain)
-				.font(.title2)
-				.onSubmit {
-					// Executes the action for the currently selected item when the user presses Enter.
-					viewModel.selectCurrent()
-				}
-				.focused(focus)
-				
-			} else {
-				TextField(
-					title,
-					text: $viewModel.searchText
-				)
-				.textFieldStyle(.plain)
-				.font(.title2)
-				.onSubmit {
-					// Executes the action for the currently selected item when the user presses Enter.
-					viewModel.selectCurrent()
-				}
-			}
-						
-			// Show a clear button if the search field is not empty and not loading.
-			Button(action: { viewModel.reset() }) {
-				Image(systemName: "xmark.circle.fill")
-					.foregroundColor(.secondary)
-			}
-			.buttonStyle(.plain)
-		}
-	}
-	
-	/// A view component that displays the list of search results.
-	private var resultsView: some View {
-		// `ScrollViewReader` allows programmatically scrolling to a specific result.
-		ScrollViewReader { proxy in
-			ScrollView {
-				// `LazyVStack` improves performance by only creating views for items as they become visible.
-				LazyVStack(spacing: 8) {
-					ForEach(viewModel.searchResults.indices, id: \.self) { index in
-						let item = viewModel.searchResults[index]
-						let isSelected = index == viewModel.selectedIndex
-						
-						// Initialize the user-provided custom row view for each item.
-						rowViewType.init(
-							item: item,
-							isSelected: isSelected,
-							style: viewModel.rowStyle,
-							onTap: {
-								// Handle tap gestures on the row.
-								viewModel.selectedIndex = index
-								viewModel.selectCurrent()
-							}
-						)
-						.id(index) // Assign a unique ID for the `ScrollViewReader` to target.
-					}
-				}
-				.padding()
-				// The background with GeometryReader is a technique to measure the content's height.
-				.background(
-					GeometryReader { geo in
-						Color.clear.preference(
-							key: ContentHeightKey.self,
-							value: geo.size.height
-						)
-					}
-				)
-			}
-			.frame(maxHeight: viewModel.configuration.maxHeight) // Constrain the scrollable area height.
-			.onChange(of: viewModel.selectedIndex) { _, newIndex in
-				// Automatically scroll to the newly selected item with an animation.
-				withAnimation(.easeInOut(duration: 0.3)) {
-					proxy.scrollTo(newIndex, anchor: .center)
-				}
-			}
-		}
-		.transition(
-			// Define a custom animation for when the results view appears and disappears.
-			.asymmetric(
-				insertion: .scale(scale: 0.95, anchor: .top)
-					.combined(with: .opacity),
-				removal: .scale(scale: 0.95, anchor: .top)
-					.combined(with: .opacity)
-			)
-		)
 	}
 }
