@@ -12,7 +12,7 @@ import SwiftUI
 /// Each `SpotlightSection` can have its own identifier, title, icon, and behavior. It is designed to be highly
 /// configurable, allowing developers to define custom SwiftUI views for a section's content, specify selection handlers,
 /// and control visibility dynamically.
-public struct SpotlightSection<Item: SpotlightItem> {
+public struct SpotlightSection<Item: SpotlightItem>: Identifiable {
 	
 	// MARK: - Properties
 	

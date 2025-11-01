@@ -70,7 +70,7 @@ public struct SpotlightConfiguration: Sendable {
 		
 		onSelect		 : @escaping @MainActor (SpotlightFileItem) -> Void = { _ in }
 	) {
-		self.title = title
+		self.title 			   = title
 		self.icon 			   = icon
 		self.debounceInterval  = debounceInterval
 		self.maxHeight 		   = maxHeight
