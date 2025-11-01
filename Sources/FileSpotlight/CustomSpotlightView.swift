@@ -56,6 +56,7 @@ public struct CustomSpotlightView<Item: SpotlightItem, RowView: SpotlightRowView
 		let section = self.viewModel.getPrincipalSection()
 		
 		VStack(spacing: 0) {
+			
 			HStack(
 				alignment: .firstTextBaseline,
 				spacing: 12
@@ -92,7 +93,7 @@ public struct CustomSpotlightView<Item: SpotlightItem, RowView: SpotlightRowView
 		.glassEffect(.regular, in: shape) // Applies a custom glass-like visual effect.
 		.onKeyPress { keyPress in
 			// Forwards key press events to the view model for handling navigation (e.g., up/down arrows).
-			viewModel.handleKeyPress(keyPress)
+			self.viewModel.handleKeyPress(keyPress)
 		}
 	}
 	
@@ -102,16 +103,18 @@ public struct CustomSpotlightView<Item: SpotlightItem, RowView: SpotlightRowView
 	/// - Parameter shape: A shape conforming to SwiftUI's `Shape` protocol.
 	/// - Returns: A new version of the view with the specified shape.
 	public func clipShape<S: Shape>(_ shape: S) -> Self {
-		var view = self
+		var view   = self
 		view.shape = AnyShape(shape)
+		
 		return view
 	}
 	
 	/// Get focusable state.
 	/// - Parameter binding: Focusable state
 	public func focused(_ binding: FocusState<Bool>.Binding) -> Self {
-		var view = self
+		var view		  = self
 		view.focusBinding = binding
+		
 		return view
 	}
 }
