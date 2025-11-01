@@ -43,7 +43,10 @@ public struct MultiSectionSpotlightView<Item: SpotlightItem>: View {
 	/// - Parameters:
 	///   - viewModel: The view model that manages the state and data for the spotlight.
 	///   - width: The desired width of the view. Defaults to 600 points.
-	public init(viewModel: MultiSectionSpotlightViewModel<Item>, width: CGFloat = 600) {
+	public init(
+		viewModel: MultiSectionSpotlightViewModel<Item>,
+		width	 : CGFloat = 600
+	) {
 		self.viewModel = viewModel
 		self.width     = width
 	}
@@ -68,8 +71,8 @@ public struct MultiSectionSpotlightView<Item: SpotlightItem>: View {
 					
 					HStack(spacing: 12) {
 						SearchBarView(
-							title	  : section.title ?? "gearshape",
-							icon	  : section.icon ?? "Nil",
+							title	  : section.title ?? "nil",
+							icon	  : section.icon ?? "gearshape",
 							focusState: focusBinding,
 							searchText: self.$viewModel.searchText
 						)

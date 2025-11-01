@@ -20,6 +20,24 @@ struct ResultsView<Item: SpotlightItem>: View {
 	
 	let selectCurrentRow: () -> Void
 	
+	init(
+		listSelectedIndex: Binding<Int>,
+		indexSection	 : Int = 0,
+		spotlightSection : SpotlightSection<Item>,
+		searchResults	 : [Item],
+		rowStyle		 : SpotlightRowStyle,
+		maxHeight		 : CGFloat,
+		selectCurrentRow : @escaping () -> Void
+	) {
+		self._listSelectedIndex = listSelectedIndex
+		self.indexSection 	    = indexSection
+		self.spotlightSection   = spotlightSection
+		self.searchResults	    = searchResults
+		self.rowStyle 		    = rowStyle
+		self.maxHeight 		    = maxHeight
+		self.selectCurrentRow   = selectCurrentRow
+	}
+	
 	var body: some View {
 		
 		// `ScrollViewReader` allows programmatically scrolling to a specific view inside the `ScrollView`.
