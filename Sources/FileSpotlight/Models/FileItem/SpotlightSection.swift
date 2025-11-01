@@ -34,7 +34,7 @@ public struct SpotlightSection<Item: SpotlightItem>: Identifiable {
 	public let isVisible: @Sendable () -> Bool
 	
 	/// An optional closure that returns a type-erased view (`AnyView`) for the section's content.
-	public let view: (() -> AnyView)?
+	public let view: AnyView?
 	
 	/// Keyboard shortcut, this variable assign a section the command.
 	public let keyboardShortcut: CommandSection?
@@ -57,7 +57,7 @@ public struct SpotlightSection<Item: SpotlightItem>: Identifiable {
 		id				 : String,
 		title			 : String? = nil,
 		icon			 : String? = nil,
-		@ViewBuilder view: @escaping () -> Content,
+		@ViewBuilder view: () -> Content,
 		onSelect		 : @escaping @Sendable @MainActor (Item) -> Void,
 		keyboardShortcut : CommandSection? = nil,
 		isVisible		 : @escaping @Sendable () -> Bool = { true }
@@ -67,7 +67,7 @@ public struct SpotlightSection<Item: SpotlightItem>: Identifiable {
 		self.icon  = icon
 		
 		// The custom view is type-erased to AnyView for storage.
-		self.view 			  = { AnyView(view()) }
+		self.view 			  = AnyView(view())
 		self.onSelect		  = onSelect
 		self.keyboardShortcut = keyboardShortcut
 		self.isVisible		  = isVisible
@@ -82,8 +82,8 @@ public struct SpotlightSection<Item: SpotlightItem>: Identifiable {
 	/// - Returns: The custom SwiftUI view for the section or an `EmptyView`.
 	@ViewBuilder
 	public func buildView() -> some View {
-		if let builder = view {
-			builder()
+		if let view = view {
+			view
 			
 		} else {
 			EmptyView()

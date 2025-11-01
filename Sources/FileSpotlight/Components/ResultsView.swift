@@ -64,6 +64,7 @@ struct ResultsView<Item: SpotlightItem>: View {
 								}
 								
 							)
+							.id(index)
 						}
 					}
 					.padding()
