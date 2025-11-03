@@ -20,23 +20,14 @@ struct SearchBarView: View {
 			.foregroundColor(.secondary)
 			.font(.title2)
 
-		if let focus = focusState {
-			TextField(
-				title,
-				text: $searchText
-			)
-			.textFieldStyle(.plain)
-			.font(.title2)
-			.focused(focus)
-			
-		} else {
-			TextField(
-				title,
-				text: $searchText
-			)
-			.textFieldStyle(.plain)
-			.font(.title2)
-			
-		}		
+		TextField(
+			title,
+			text: $searchText
+		)
+		.if(self.focusState != nil, transform: { view in
+			view.focused(self.focusState!)
+		})
+		.textFieldStyle(.plain)
+		.font(.title2)
 	}
 }

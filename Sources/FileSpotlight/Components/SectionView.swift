@@ -75,6 +75,5 @@ struct SectionView<Item: SpotlightItem>: View {
 			),
 			in: .circle
 		)
-		.clipShape(Circle())
 	}
 }
